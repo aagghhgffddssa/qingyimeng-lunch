@@ -1,23 +1,515 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>青藝盟午餐冒險 V3</title><style>
-:root{--bg:#fff8ee;--ink:#2f2a25;--muted:#7b7066;--accent:#ff7b54;--yellow:#ffc857;--blue:#5b8def;--green:#78c091;--line:#eadfd3}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:linear-gradient(135deg,#fff8ee,#fff3c9);color:var(--ink)}button,input,select{font:inherit}button{cursor:pointer}.wrap{max-width:1150px;margin:auto;padding:24px}.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 14px 36px #00000010}header{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:18px}h1{font-size:clamp(32px,5vw,52px);margin:0}.muted,.meta,.note{color:var(--muted)}.stats,.filters,.tabs,.badges,.actions{display:flex;gap:8px;flex-wrap:wrap}.stat,.chip,.tab,.pill{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-weight:800}.chip.active{background:var(--ink);color:#fff}.tab.active{background:var(--yellow)}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}.sync{display:flex;gap:12px;justify-content:space-between;align-items:center}.syncbtn,.add{border:0;border-radius:12px;padding:11px 14px;color:#fff;font-weight:900}.syncbtn{background:var(--blue)}.add{background:var(--green)}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}select,input{width:100%;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff}.draw{width:100%;margin-top:14px;padding:15px;border:0;border-radius:16px;background:var(--accent);color:#fff;font-size:20px;font-weight:950}.roulette{margin-top:14px;min-height:165px;background:#2f2a25;color:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px}.restaurant-name{font-size:28px;font-weight:950;margin:8px 0}.badge{background:#ffffff20;padding:5px 8px;border-radius:999px;font-size:12px}.mini{background:#ffffff14;border:1px solid #ffffff35;color:#fff;padding:8px 10px;border-radius:10px;font-weight:800}.list{display:grid;gap:9px;max-height:610px;overflow:auto}.shop{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px;border:1px solid var(--line);border-radius:14px}.shop h3{margin:0 0 5px}.meta{font-size:13px;display:flex;gap:6px;flex-wrap:wrap}.iconbtn{background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px}.iconbtn.on{background:#fff1c9}.footer{margin-top:18px}.custom{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:8px}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#2f2a25;color:#fff;padding:10px 15px;border-radius:999px;opacity:0;transition:.2s}.toast.show{opacity:1}@media(max-width:820px){.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}.wrap{padding:14px}.custom{grid-template-columns:1fr 1fr}.custom .add{grid-column:span 2}.sync{align-items:flex-start;flex-direction:column}}
-</style></head><body><div class="wrap">
-<header><div><div style="font-weight:900;color:var(--accent);letter-spacing:2px">TEENAGER PERFORMING ARTS LEAGUE · LUNCH QUEST V3</div><h1>🍱 青藝盟午餐冒險</h1><div class="muted">基地：新北市淡水區長興街 56 號 1 樓</div></div><div class="stats"><span class="stat">⭐ Lv.<b id="level">1</b></span><span class="stat">⚡ XP <b id="xp">0</b></span></div></header>
-<section class="card" style="margin-bottom:18px"><div class="sync"><div><h2 style="margin:0">🌐 Google 午餐雷達</h2><div id="syncStatus" class="muted">這版會優先找真正適合午餐的店。</div><div style="margin-top:8px"><span class="pill">🍱 便當</span><span class="pill">🍜 麵食</span><span class="pill">🥟 小吃</span><span class="pill">🍛 正餐</span></div></div><button id="syncBtn" class="syncbtn">🔄 更新午餐資料庫</button></div><div class="note" style="font-size:12px;margin-top:9px">同步邏輯已改為：附近正餐＋英專路／清水街／博愛街午餐關鍵字補抓，並排除咖啡、糕餅、甜點、伴手禮、飲料店。建議約每週更新一次。</div></section>
-<div class="grid"><section class="card"><h2>今天，中午吃什麼？</h2><div id="categoryFilters" class="filters"></div><div class="controls"><select id="budget"><option value="all">💰 預算不限</option><option value="cheap">💰 平價</option><option value="mid">💰 中等</option><option value="treat">💰 犒賞局</option></select><select id="distance"><option value="10">🚶 約 10 分鐘內</option><option value="6">🚶 約 6 分鐘內</option><option value="3">🚶 約 3 分鐘內</option></select></div><button id="drawBtn" class="draw">🎲 命運午餐！</button><div id="roulette" class="roulette"><div><div style="font-size:36px">🥢</div><div class="restaurant-name">等待你的午餐命運</div></div></div></section>
-<section class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>🗺️ 午餐圖鑑</h2><span class="muted"><b id="count">0</b> 間</span></div><div class="tabs"><button class="tab active" data-tab="all">全部</button><button class="tab" data-tab="google">🌐 Google</button><button class="tab" data-tab="fav">❤️ 收藏</button><button class="tab" data-tab="history">✅ 吃過</button><button class="tab" data-tab="blocked">🫥 封印</button></div><div id="shopList" class="list"></div></section></div>
-<section class="card footer"><h2>➕ 私藏店家</h2><div class="custom"><input id="newName" placeholder="店名"><input id="newCat" placeholder="分類"><input id="newAddress" placeholder="地址"><button id="addShop" class="add">加入</button></div></section></div><div id="toast" class="toast"></div>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>青藝盟午餐冒險 V4｜搜尋與店家管理</title>
+<style>
+  :root{
+    --bg:#fff8ee; --panel:#ffffff; --ink:#2f2a25; --muted:#7b7066;
+    --accent:#ff7b54; --accent2:#ffc857; --green:#78c091; --line:#eadfd3;
+    --shadow:0 14px 38px rgba(70,45,25,.10); --blue:#5b8def;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:
+    radial-gradient(circle at 10% 0%,#ffe2c5 0,transparent 28%),
+    radial-gradient(circle at 100% 10%,#fff0a8 0,transparent 24%),var(--bg);color:var(--ink)}
+  button,input,select{font:inherit} button{cursor:pointer}
+  .wrap{max-width:1180px;margin:auto;padding:24px}
+  header{display:flex;gap:18px;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .brand h1{margin:0;font-size:clamp(28px,5vw,50px);letter-spacing:-1.5px}
+  .brand p{margin:6px 0 0;color:var(--muted)}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .stat{background:#fff;border:1px solid var(--line);padding:9px 12px;border-radius:999px;box-shadow:0 5px 15px rgba(0,0,0,.04);font-weight:750}
+  .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+  .card{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+  .hero{min-height:420px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative}
+  .hero:after{content:"🍜";position:absolute;right:-10px;top:-28px;font-size:140px;opacity:.08;transform:rotate(12deg)}
+  .eyebrow{font-size:13px;font-weight:900;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+  .question{font-size:36px;font-weight:900;line-height:1.1;margin:8px 0}
+  .sub{color:var(--muted)}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}
+  .chip{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:999px;font-weight:800}
+  .chip.active{background:var(--ink);color:white;border-color:var(--ink)}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+  select,input{width:100%;border:1px solid var(--line);background:#fff;padding:12px;border-radius:14px}
+  .draw{width:100%;border:0;border-radius:18px;padding:15px 18px;font-weight:950;font-size:19px;background:linear-gradient(135deg,var(--accent),#ff9a62);color:#fff;box-shadow:0 9px 0 #d95a36;transition:.12s transform,.12s box-shadow}
+  .draw:hover{transform:translateY(-2px);box-shadow:0 11px 0 #d95a36} .draw:active{transform:translateY(6px);box-shadow:0 3px 0 #d95a36}
+  .roulette{margin-top:16px;background:#2f2a25;color:white;border-radius:22px;padding:18px;min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden}
+  .roulette .result{position:relative;z-index:2} .restaurant-name{font-size:28px;font-weight:950;margin:6px 0}
+  .badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap} .badge{font-size:12px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.14)}
+  .actions{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .mini{border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.10);color:white;padding:8px 10px;border-radius:12px;font-weight:800}
+  .spin{animation:spinflash .17s linear infinite} @keyframes spinflash{0%{transform:scale(.98);opacity:.6}50%{transform:scale(1.03);opacity:1}100%{transform:scale(.98);opacity:.65}}
+  .section-title{display:flex;justify-content:space-between;align-items:end;margin-bottom:12px} .section-title h2{margin:0;font-size:20px} .section-title small{color:var(--muted)}
+  .tabs{display:flex;gap:6px;margin:8px 0 12px;flex-wrap:wrap} .tab{border:1px solid var(--line);background:white;border-radius:12px;padding:8px 10px;font-weight:800} .tab.active{background:var(--accent2)}
+  .list{display:grid;gap:9px;max-height:600px;overflow:auto;padding-right:3px}
+  .shop{display:grid;grid-template-columns:1fr auto;gap:10px;border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff}
+  .shop h3{margin:0 0 4px;font-size:16px} .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px}
+  .shop-actions{display:flex;gap:5px;align-items:center} .iconbtn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 8px} .iconbtn.on{background:#fff1c9}
+  .source{font-size:11px;border-radius:999px;padding:3px 7px;font-weight:900} .source.google{background:#eaf1ff;color:#3e67b1} .source.manual{background:#eef9f0;color:#377b4e}
+  .empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px}
+  .footer-card{margin-top:18px} .custom-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:8px}
+  .add{border:0;background:var(--green);color:white;font-weight:900;border-radius:12px;padding:10px 14px}
+  .note{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6}
+  .syncbox{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:#f7faff;border:1px solid #dbe7ff;border-radius:18px;padding:14px}
+  .syncbtn{border:0;background:var(--blue);color:white;font-weight:900;border-radius:13px;padding:11px 15px;min-width:150px}
+  .syncbtn:disabled{opacity:.55;cursor:wait}
+  .syncstatus{font-size:13px;color:var(--muted);margin-top:5px}
+  .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:12px;font-weight:800;margin-right:4px}
+  .quest{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;border:1px dashed #decbbb;border-radius:16px;margin-top:12px;background:#fffaf5}
+  .quest .icon{font-size:28px} .progress{height:9px;background:#eee4da;border-radius:99px;overflow:hidden;margin-top:7px} .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--green),#9bd8ad);width:0}
+
+  .atlas-tools{display:grid;grid-template-columns:1fr auto;gap:8px;margin:10px 0 12px}.searchbox{position:relative}.searchbox input{padding-left:40px;padding-right:38px}.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none}.clear-search{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;font-size:18px;color:var(--muted);padding:4px 7px}.managebtn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;font-weight:900;white-space:nowrap}.managebtn.active{background:#2f2a25;color:#fff}.deletebtn{border:1px solid #ffd2cc;background:#fff5f3;color:#c84535;border-radius:10px;padding:7px 8px;font-weight:900}.removedbar{display:none;justify-content:space-between;align-items:center;gap:8px;background:#fff6f4;border:1px dashed #f0b9ae;border-radius:12px;padding:9px 11px;margin-bottom:10px;font-size:13px}.removedbar.show{display:flex}.restorebtn{border:0;background:#fff;color:#b84a3a;border-radius:9px;padding:6px 9px;font-weight:900}.add-panel{background:linear-gradient(135deg,#fffaf5,#fff);border:1px solid var(--line);border-radius:18px;padding:16px}.form-help{margin:4px 0 14px;color:var(--muted);font-size:13px;line-height:1.6}.form-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px}.field{display:grid;gap:6px}.field label{font-size:13px;font-weight:900}.field.full{grid-column:1/-1}.form-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.maphelp{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;font-weight:850}.add.large{padding:11px 18px}.custom-tag{display:inline-block;background:#eef9f0;color:#377b4e;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:900}.search-summary{font-size:12px;color:var(--muted);margin:-5px 0 8px}.danger-note{font-size:12px;color:#9a5146}.shop.removing{opacity:.45;transform:scale(.98);transition:.15s}.field-note{font-size:11px;color:var(--muted)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:#2f2a25;color:#fff;padding:11px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:50;font-weight:800}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)} .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:40}
+  .confetti span{position:absolute;top:-30px;font-size:24px;animation:fall 1.25s ease-in forwards} @keyframes fall{to{transform:translateY(110vh) rotate(700deg);opacity:.2}}
+  @media(max-width:850px){.grid{grid-template-columns:1fr}.wrap{padding:14px}header{align-items:flex-start;flex-direction:column}.stats{justify-content:flex-start}.custom-grid{grid-template-columns:1fr 1fr}.custom-grid .add{grid-column:span 2}.hero{min-height:unset}.syncbox{grid-template-columns:1fr}.atlas-tools{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <div class="eyebrow">Teenager Performing Arts League · Lunch Quest V4</div>
+    <h1>🍱 青藝盟午餐冒險</h1>
+    <p>基地：新北市淡水區長興街 56 號 1 樓｜搜尋・編輯・私藏店家管理版</p>
+  </div>
+  <div class="stats">
+    <div class="stat">⭐ Lv.<span id="level">1</span></div>
+    <div class="stat">⚡ XP <span id="xp">0</span></div>
+    <div class="stat">🔥 連續探索 <span id="streak">0</span> 天</div>
+  </div>
+</header>
+
+<section class="card" style="margin-bottom:18px">
+  <div class="section-title"><h2>🌐 Google 午餐雷達</h2><small>API Key 已設定</small></div>
+  <div class="syncbox">
+    <div>
+      <b>同步青藝盟步行圈內的「午餐型」店家</b>
+      <div class="syncstatus" id="syncStatus">尚未同步 Google 店家。第一次請按右側按鈕。</div>
+      <div style="margin-top:8px">
+        <span class="pill">🍱 便當</span><span class="pill">🍜 麵食</span><span class="pill">🥟 小吃</span><span class="pill">🍛 正餐</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="syncbtn" id="syncBtn">🔄 同步 Google 店家</button><button class="syncbtn" id="diagBtn" style="background:#555">🧪 API 診斷</button></div>
+  </div>
+  <div class="note">同步會優先找便當、麵食、小吃、飯類與英專路周邊正餐，並排除咖啡、糕餅、甜點、伴手禮與飲料店。結果會存在這台瀏覽器的快取中；建議約每週同步一次。步行分鐘為估計值。</div><pre id="diagPanel" style="display:none;white-space:pre-wrap;background:#272822;color:#f8f8f2;padding:12px;border-radius:14px;overflow:auto;font-size:12px"></pre>
+</section>
+
+<div class="grid">
+  <section class="card hero">
+    <div>
+      <div class="eyebrow">TODAY'S QUEST</div><div class="question">今天，中午吃什麼？</div>
+      <div class="sub">Google 店家＋你自己的店家一起抽。懶得選，就交給命運。</div>
+      <div class="filters" id="categoryFilters"></div>
+      <div class="controls">
+        <select id="budget">
+          <option value="all">💰 預算不限</option><option value="cheap">💰 平價</option><option value="mid">💰 中等</option><option value="treat">💰 今天對自己好一點</option>
+        </select>
+        <select id="distance">
+          <option value="10">🚶 約 10 分鐘內</option><option value="6">🚶 懶得走：約 6 分鐘內</option><option value="3">🚶 超懶：約 3 分鐘內</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <button class="draw" id="drawBtn">🎲 命運午餐！</button>
+      <div class="roulette" id="roulette"><div class="result"><div style="font-size:36px">🥢</div><div class="restaurant-name">等待你的午餐命運</div><div class="badges"><span class="badge">同步 Google 後選項會大幅增加</span></div></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title"><h2>🗺️ 午餐圖鑑</h2><small><span id="count">0</span> 間可探索</small></div>
+    <div class="atlas-tools">
+      <div class="searchbox"><span class="search-icon">🔎</span><input id="shopSearch" placeholder="搜尋店名、地址或分類，例如：黑豆、英專路、麵食"><button class="clear-search" id="clearSearch" title="清除搜尋">×</button></div>
+      <button class="managebtn" id="manageBtn">✏️ 編輯店家</button>
+    </div>
+    <div class="search-summary" id="searchSummary"></div>
+    <div class="removedbar" id="removedBar"><span>🗑️ 已從午餐圖鑑移除 <b id="removedCount">0</b> 間</span><button class="restorebtn" id="restoreRemoved">↩ 全部復原</button></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="all">全部</button><button class="tab" data-tab="google">🌐 Google</button>
+      <button class="tab" data-tab="fav">❤️ 收藏</button><button class="tab" data-tab="history">✅ 吃過</button><button class="tab" data-tab="blocked">🫥 封印</button>
+    </div>
+    <div class="list" id="shopList"></div>
+  </section>
+</div>
+
+<section class="card footer-card">
+  <div class="section-title"><h2>🏆 本週支線任務</h2><small>完成午餐也要有成就感</small></div>
+  <div class="quest"><div class="icon">🌈</div><div><b>不要再吃一樣的</b><div class="sub">本週探索 3 間不同店家</div><div class="progress"><i id="questProgress"></i></div></div><b id="questText">0 / 3</b></div>
+  <div class="quest"><div class="icon">🎭</div><div><b>青藝盟午餐團</b><div class="sub">抽到後截圖丟公司群組，讓命運決定今天揪誰</div></div><span>+歡樂</span></div>
+</section>
+
+<section class="card footer-card">
+  <div class="section-title"><h2>➕ 找不到店家？補進午餐地圖</h2><small>適合 Google 漏掉的巷弄店、同事私藏店</small></div>
+  <div class="add-panel">
+    <div class="form-help">不用每格都填得很精準：<b>店名必填</b>，分類、預算與步行時間會影響之後的篩選與抽選；地址填上後就能直接開 Google Maps。</div>
+    <div class="form-grid">
+      <div class="field"><label for="newName">🍽️ 店名 *</label><input id="newName" placeholder="例如：黑豆食堂"></div>
+      <div class="field"><label for="newCat">🏷️ 分類</label><select id="newCat"><option>便當／自助餐</option><option>麵食</option><option>水餃／鍋貼</option><option>飯類</option><option>台式小吃</option><option>中式／台式</option><option>日式</option><option>韓式</option><option>咖哩</option><option>東南亞</option><option>火鍋</option><option>速食／西式</option><option>早餐／輕食</option><option>餐廳</option><option>其他</option></select></div>
+      <div class="field"><label for="newPrice">💰 預算</label><select id="newPrice"><option value="cheap">平價</option><option value="mid">中等</option><option value="treat">犒賞局</option></select></div>
+      <div class="field"><label for="newMins">🚶 步行時間</label><input id="newMins" type="number" min="1" max="30" value="10"><div class="field-note">填大約幾分鐘即可</div></div>
+      <div class="field" style="grid-column:span 2"><label for="newAddress">📍 地址</label><input id="newAddress" placeholder="例如：新北市淡水區英專路21巷16號"></div>
+      <div class="field full"><label for="newNote">💬 備註（選填）</label><input id="newNote" placeholder="例如：份量大、週一公休、大家常點雞腿飯"></div>
+    </div>
+    <div class="form-actions"><button class="add large" id="addShop">＋ 加入午餐圖鑑</button><button class="maphelp" id="findOnMaps">📍 先去 Google Maps 找地址</button><span class="danger-note">新增後也能用上方「編輯店家」刪除。</span></div>
+  </div>
+</section>
+</div>
+<div class="toast" id="toast"></div><div class="confetti" id="confetti"></div>
+
 <script>
-const GOOGLE_MAPS_API_KEY="AIzaSyAi4Lup9-WGFhtEm5rsSmUuHHexX0LAB-k",RADIUS=850,$=s=>document.querySelector(s);let googleShops=JSON.parse(localStorage.getItem('lunch_google_shops')||'[]'),custom=JSON.parse(localStorage.getItem('lunch_custom')||'[]'),state=JSON.parse(localStorage.getItem('lunch_state')||'{"xp":0,"fav":[],"blocked":[],"history":[]}'),selectedCat='全部',currentTab='all',currentResult=null;
-const seed=[{id:'s1',name:'瑞麟美而美',cat:'早餐／輕食',price:'cheap',mins:1,address:'新北市淡水區長興街52號',rating:4.6,source:'manual'},{id:'s2',name:'淡水喜相逢米粉湯',cat:'台式小吃',price:'cheap',mins:5,address:'新北市淡水區長興街2號',rating:3.7,source:'manual'},{id:'s3',name:'萍萍便當快餐',cat:'便當／自助餐',price:'cheap',mins:7,address:'新北市淡水區博愛街29號',rating:4.3,source:'manual'},{id:'s4',name:'一麵',cat:'麵食',price:'cheap',mins:7,address:'新北市淡水區清水街28號1樓',rating:4.5,source:'manual'}];
-const shops=()=>{let m=new Map();[...googleShops,...seed,...custom].forEach(s=>m.set(s.googlePlaceId||s.id,s));return[...m.values()]};function save(){localStorage.setItem('lunch_google_shops',JSON.stringify(googleShops));localStorage.setItem('lunch_custom',JSON.stringify(custom));localStorage.setItem('lunch_state',JSON.stringify(state))}function esc(v){return String(v||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}function toast(x){let t=$('#toast');t.textContent=x;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}function priceLabel(p){return p==='mid'?'中等':p==='treat'?'犒賞局':'平價'}
-function cats(){return['全部',...new Set(shops().map(s=>s.cat).filter(Boolean))].slice(0,20)}function renderCats(){if(!cats().includes(selectedCat))selectedCat='全部';$('#categoryFilters').innerHTML=cats().map(c=>`<button class="chip ${c===selectedCat?'active':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{selectedCat=b.dataset.cat;renderCats();renderList()})}function filtered(){let b=$('#budget').value,d=+$('#distance').value;return shops().filter(s=>(selectedCat==='全部'||s.cat===selectedCat)&&(b==='all'||s.price===b)&&(s.mins||10)<=d&&!state.blocked.includes(s.id))}function mapsUrl(s){return s.googleMapsURI||'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(s.name+' '+(s.address||''))}
-function renderList(){let a=shops();if(currentTab==='google')a=a.filter(s=>s.source==='google');if(currentTab==='fav')a=a.filter(s=>state.fav.includes(s.id));if(currentTab==='blocked')a=a.filter(s=>state.blocked.includes(s.id));if(currentTab==='history'){let ids=[...new Set(state.history.map(h=>h.id))];a=ids.map(id=>shops().find(s=>s.id===id)).filter(Boolean)}$('#count').textContent=a.length;$('#shopList').innerHTML=a.length?a.map(s=>`<div class="shop"><div><h3>${esc(s.name)}</h3><div class="meta"><span>🍽️ ${esc(s.cat||'其他')}</span><span>💰 ${priceLabel(s.price)}</span><span>🚶 約 ${s.mins||'?'} 分</span>${s.rating?`<span>⭐ ${s.rating}</span>`:''}</div><div class="meta">${esc(s.address||'')}</div></div><div><button class="iconbtn ${state.fav.includes(s.id)?'on':''}" onclick="fav('${s.id}')">❤️</button><button class="iconbtn" onclick='window.open(${JSON.stringify(mapsUrl(s))},"_blank")'>📍</button><button class="iconbtn ${state.blocked.includes(s.id)?'on':''}" onclick="block('${s.id}')">🫥</button></div></div>`).join(''):'<div class="muted">目前沒有店家</div>'}function fav(id){state.fav=state.fav.includes(id)?state.fav.filter(x=>x!==id):[...state.fav,id];save();renderList()}function block(id){state.blocked=state.blocked.includes(id)?state.blocked.filter(x=>x!==id):[...state.blocked,id];save();renderList()}window.fav=fav;window.block=block;
-function show(s,spin=false){$('#roulette').innerHTML=`<div><div style="font-size:30px">${spin?'🎰':'🍴'}</div><div class="restaurant-name">${esc(s.name)}</div><div class="badges"><span class="badge">${esc(s.cat)}</span><span class="badge">${priceLabel(s.price)}</span><span class="badge">🚶 約 ${s.mins} 分</span>${s.rating?`<span class="badge">⭐ ${s.rating}</span>`:''}</div>${spin?'':`<div class="actions"><button class="mini" onclick="eat()">✅ 就吃這間</button><button class="mini" onclick="draw()">🔄 重抽</button><button class="mini" onclick='window.open(${JSON.stringify(mapsUrl(s))},"_blank")'>📍 地圖</button></div>`}</div>`}function draw(){let p=filtered();if(!p.length)return toast('這組條件沒有店家');let i=0,t=setInterval(()=>{show(p[Math.floor(Math.random()*p.length)],true);if(++i>12){clearInterval(t);currentResult=p[Math.floor(Math.random()*p.length)];show(currentResult)}},85)}function eat(){if(!currentResult)return;state.history.push({id:currentResult.id,date:new Date().toISOString().slice(0,10)});state.xp+=20;save();stats();renderList();toast('完成午餐任務！ +20 XP ✨')}window.draw=draw;window.eat=eat;function stats(){$('#xp').textContent=state.xp||0;$('#level').textContent=Math.floor((state.xp||0)/100)+1}
-let mapsPromise=null;function loadMaps(){if(window.google?.maps?.importLibrary)return Promise.resolve();if(mapsPromise)return mapsPromise;mapsPromise=new Promise((ok,no)=>{let s=document.createElement('script');s.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(GOOGLE_MAPS_API_KEY)+'&v=weekly&libraries=places';s.async=true;s.onload=ok;s.onerror=()=>no(new Error('Google Maps 載入失敗'));document.head.appendChild(s)});return mapsPromise}async function locate(){let{Place}=await google.maps.importLibrary('places'),{places}=await Place.searchByText({textQuery:'青少年表演藝術聯盟 新北市淡水區長興街56號',fields:['location'],language:'zh-TW',region:'TW',maxResultCount:1});if(!places?.[0]?.location)throw new Error('找不到青藝盟據點');let p=places[0].location;return{lat:typeof p.lat==='function'?p.lat():p.lat,lng:typeof p.lng==='function'?p.lng():p.lng}}function hav(a,b){let R=6371000,r=x=>x*Math.PI/180,d1=r(b.lat-a.lat),d2=r(b.lng-a.lng),q=Math.sin(d1/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(q))}function walk(m){return Math.max(1,Math.round(m*1.2/80))}function pLevel(p){let x=String(p||'').toUpperCase();return x.includes('MODERATE')?'mid':x.includes('EXPENSIVE')?'treat':'cheap'}
-function isLunch(p,name){let primary=String(p.primaryType||'').toLowerCase(),types=(p.types||[]).map(x=>String(x).toLowerCase()),n=String(name||'').toLowerCase(),badTypes=['cafe','coffee_shop','bakery','dessert_shop','dessert_restaurant','ice_cream_shop','candy_store','confectionery','tea_store','bar','night_club'],badNames=['咖啡','coffee','甜點','甜品','蛋糕','餅舖','餅店','餅家','花生糖','牛軋糖','鳳梨酥','伴手禮','烘焙','麵包','茶飲','手搖','飲料店','冰品','冰店','豆花'];if(badTypes.includes(primary))return false;if(types.some(t=>badTypes.includes(t))&&!types.includes('restaurant'))return false;return !badNames.some(w=>n.includes(w))}
-function category(p,name){let t=((p.primaryType||'')+' '+(p.types||[]).join(' ')+' '+name).toLowerCase(),has=a=>a.some(w=>t.includes(w));if(has(['便當','自助餐','快餐','燒臘','排骨飯','雞腿飯']))return'便當／自助餐';if(has(['牛肉麵','麵店','麵館','乾麵','湯麵','麵疙瘩','拉麵','ramen','烏龍麵']))return'麵食';if(has(['水餃','鍋貼','餃子','dumpling']))return'水餃／鍋貼';if(has(['滷肉飯','魯肉飯','雞肉飯','肉燥飯','飯館']))return'飯類';if(has(['咖哩','curry']))return'咖哩';if(has(['japanese','sushi','日式','日本料理','壽司','丼']))return'日式';if(has(['korean','韓式']))return'韓式';if(has(['thai','vietnamese','indonesian','泰式','越南','印尼']))return'東南亞';if(has(['hot_pot','火鍋','鍋物']))return'火鍋';if(has(['hamburger','fast_food','pizza','漢堡','披薩']))return'速食／西式';if(has(['早餐','早午餐','breakfast','brunch','蛋餅','吐司']))return'早餐／輕食';if(has(['小吃','米粉','滷味','鹽酥雞','蚵仔','臭豆腐','肉圓','肉羹','魷魚羹']))return'台式小吃';if(has(['chinese','taiwanese','中式','台菜','臺菜']))return'中式／台式';return'餐廳'}
-const fields=['id','displayName','location','formattedAddress','googleMapsURI','rating','userRatingCount','priceLevel','primaryType','types','businessStatus'];async function nearby(c){let{Place,SearchNearbyRankPreference}=await google.maps.importLibrary('places'),{places}=await Place.searchNearby({fields,locationRestriction:{center:c,radius:RADIUS},includedPrimaryTypes:['restaurant'],maxResultCount:20,rankPreference:SearchNearbyRankPreference.DISTANCE,language:'zh-TW',region:'TW'});return places||[]}async function textSearch(q){let{Place}=await google.maps.importLibrary('places'),{places}=await Place.searchByText({textQuery:q,fields,language:'zh-TW',region:'TW',maxResultCount:20});return places||[]}
-async function sync(){let b=$('#syncBtn'),s=$('#syncStatus');b.disabled=true;s.textContent='正在定位青藝盟…';try{await loadMaps();let c=await locate(),all=[];try{all.push(...await nearby(c))}catch(e){console.warn(e)}let qs=['淡水 英專路 美食 餐廳','淡水 英專路 便當','淡水 英專路 麵店','淡水 英專路 小吃','淡水 清水街 博愛街 美食','淡水 便當 自助餐','淡水 牛肉麵 水餃','淡水 滷肉飯 飯類','淡水 咖哩 日式 韓式料理'];for(let i=0;i<qs.length;i++){s.textContent=`正在補抓午餐店家 ${i+2} / ${qs.length+1}…`;try{all.push(...await textSearch(qs[i]))}catch(e){console.warn(qs[i],e)}}let m=new Map(),excluded=0;for(let p of all){if(!p.id||!p.location)continue;let lat=typeof p.location.lat==='function'?p.location.lat():p.location.lat,lng=typeof p.location.lng==='function'?p.location.lng():p.location.lng,meters=hav(c,{lat,lng});if(meters>RADIUS)continue;let name=typeof p.displayName==='string'?p.displayName:(p.displayName?.text||'未命名');if(!isLunch(p,name)){excluded++;continue}m.set(p.id,{id:'g-'+p.id,googlePlaceId:p.id,name,cat:category(p,name),price:pLevel(p.priceLevel),mins:walk(meters),address:p.formattedAddress||'',rating:p.rating||null,userRatingCount:p.userRatingCount||null,googleMapsURI:p.googleMapsURI||'',source:'google'})}googleShops=[...m.values()].sort((a,b)=>a.mins-b.mins||(b.rating||0)-(a.rating||0));save();localStorage.setItem('lunch_google_synced_at',new Date().toISOString());s.textContent=`同步完成：${googleShops.length} 間午餐店家｜排除 ${excluded} 間非午餐店`;renderCats();renderList();toast(`找到 ${googleShops.length} 間午餐店家 🍱`)}catch(e){s.textContent='同步失敗：'+(e?.message||e);toast('同步失敗')}finally{b.disabled=false}}
-$('#syncBtn').onclick=sync;$('#drawBtn').onclick=draw;$('#budget').onchange=renderList;$('#distance').onchange=renderList;document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));renderList()});$('#addShop').onclick=()=>{let name=$('#newName').value.trim(),cat=$('#newCat').value.trim()||'其他',address=$('#newAddress').value.trim();if(!name)return toast('請填店名');custom.push({id:'custom-'+Date.now(),name,cat,address,price:'cheap',mins:10,source:'manual'});save();renderCats();renderList();toast('已加入私藏店家')};let last=localStorage.getItem('lunch_google_synced_at');if(last)$('#syncStatus').textContent=`已有 ${googleShops.length} 間快取｜上次更新：${new Date(last).toLocaleString('zh-TW')}`;renderCats();renderList();stats();
-</script></body></html>
+const GOOGLE_MAPS_API_KEY = 'AIzaSyAi4Lup9-WGFhtEm5rsSmUuHHexX0LAB-k';
+const BASE_ADDRESS = "新北市淡水區長興街56號1樓";
+const SEARCH_RADIUS_METERS = 850;
+
+const seedShops = [
+ {id:"meiermei",name:"瑞麟美而美",cat:"早餐／輕食",price:"cheap",mins:1,address:"新北市淡水區長興街52號",rating:4.6,note:"就在隔壁等級",source:"manual"},
+ {id:"rice-noodle",name:"淡水喜相逢米粉湯",cat:"台式小吃",price:"cheap",mins:5,address:"新北市淡水區長興街2號",rating:3.7,note:"米粉湯・台味",source:"manual"},
+ {id:"pingping",name:"萍萍便當快餐",cat:"便當",price:"cheap",mins:7,address:"新北市淡水區博愛街29號",rating:4.3,note:"便當派安全選擇",source:"manual"},
+ {id:"yimian",name:"一麵",cat:"麵食",price:"cheap",mins:7,address:"新北市淡水區清水街28號1樓",rating:4.5,note:"想吃麵的時候",source:"manual"}
+];
+
+let googleShops = JSON.parse(localStorage.getItem("lunch_google_shops")||"[]");
+let custom = JSON.parse(localStorage.getItem("lunch_custom")||"[]");
+let state = JSON.parse(localStorage.getItem("lunch_state")||'{"xp":0,"fav":[],"blocked":[],"history":[]}');
+state.removed=Array.isArray(state.removed)?state.removed:[];
+let selectedCat="全部", currentTab="all", currentResult=null, searchTerm="", manageMode=false;
+const $=s=>document.querySelector(s);
+const allShops=()=>dedupe([...googleShops,...seedShops,...custom]);
+const shops=()=>allShops().filter(s=>!state.removed.includes(s.id));
+
+function dedupe(arr){
+  const seen=new Map();
+  for(const s of arr){
+    const key=(s.googlePlaceId||((s.name||"")+"|"+(s.address||""))).toLowerCase();
+    if(!seen.has(key)) seen.set(key,s);
+  }
+  return [...seen.values()];
+}
+function save(){localStorage.setItem("lunch_state",JSON.stringify(state));localStorage.setItem("lunch_custom",JSON.stringify(custom));localStorage.setItem("lunch_google_shops",JSON.stringify(googleShops));}
+function today(){return new Date().toISOString().slice(0,10)}
+function weekKey(dstr){const d=new Date(dstr+"T12:00:00"),onejan=new Date(d.getFullYear(),0,1);return d.getFullYear()+"-"+Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);}
+function priceFromGoogle(p){
+  const x=String(p||"").toUpperCase();
+  if(x.includes("INEXPENSIVE")||x.includes("FREE")||x==="1") return "cheap";
+  if(x.includes("MODERATE")||x==="2") return "mid";
+  if(x.includes("EXPENSIVE")||x.includes("VERY_EXPENSIVE")||x==="3"||x==="4") return "treat";
+  return "cheap";
+}
+function categoryFromPlace(p){
+  const name=String(p.name||p.displayName||"").toLowerCase();
+  const t=((p.primaryType||"")+" "+(p.primaryTypeDisplayName||"")+" "+(p.types||[]).join(" ")+" "+name).toLowerCase();
+  const has=(words)=>words.some(w=>t.includes(w));
+  if(has(["便當","自助餐","快餐","燒臘","排骨飯","雞腿飯"])) return "便當／自助餐";
+  if(has(["牛肉麵","麵店","麵館","乾麵","湯麵","麵疙瘩","拉麵","ramen","烏龍麵"])) return "麵食";
+  if(has(["水餃","鍋貼","餃子","dumpling"])) return "水餃／鍋貼";
+  if(has(["滷肉飯","魯肉飯","雞肉飯","肉燥飯","丼飯","飯館","飯店"])) return "飯類";
+  if(has(["咖哩","curry"])) return "咖哩";
+  if(has(["japanese","sushi","日式","日本料理","壽司","丼"])) return "日式";
+  if(has(["korean","韓式","韓國料理"])) return "韓式";
+  if(has(["thai","vietnamese","indonesian","泰式","越南","印尼"])) return "東南亞";
+  if(has(["hot_pot","火鍋","涮涮鍋","鍋物"])) return "火鍋";
+  if(has(["hamburger","fast_food","pizza","漢堡","披薩"])) return "速食／西式";
+  if(has(["早餐","早午餐","breakfast","brunch","蛋餅","吐司"])) return "早餐／輕食";
+  if(has(["小吃","米粉","滷味","鹽酥雞","蚵仔","臭豆腐","肉圓","肉羹","魷魚羹"])) return "台式小吃";
+  if(has(["chinese","taiwanese","中式","台菜","臺菜"])) return "中式／台式";
+  return "餐廳";
+}
+
+function isLunchCandidate(p,name){
+  const primary=String(p.primaryType||"").toLowerCase();
+  const types=(p.types||[]).map(x=>String(x).toLowerCase());
+  const n=String(name||"").toLowerCase();
+  const excludedTypes=["cafe","coffee_shop","bakery","dessert_shop","dessert_restaurant","ice_cream_shop","candy_store","confectionery","tea_store","bar","night_club"];
+  if(excludedTypes.includes(primary)) return false;
+  if(types.some(t=>excludedTypes.includes(t)) && !types.includes("restaurant")) return false;
+  const excludedNames=["咖啡","coffee","甜點","甜品","蛋糕","餅舖","餅店","餅家","花生糖","牛軋糖","鳳梨酥","伴手禮","烘焙","麵包","茶飲","手搖","飲料店","冰品","冰店","豆花"];
+  if(excludedNames.some(w=>n.includes(w))) return false;
+  return true;
+}
+function haversine(a,b){
+  const R=6371000, toRad=x=>x*Math.PI/180, dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng);
+  const q=Math.sin(dLat/2)**2+Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(q));
+}
+function estimatedWalkMinutes(meters){
+  return Math.max(1,Math.round((meters*1.2)/80));
+}
+function googleMapsUrl(s){
+  if(s.googleMapsURI) return s.googleMapsURI;
+  return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s.name+" "+(s.address||""));
+}
+function categories(){
+  return ["全部",...new Set(shops().map(s=>s.cat).filter(Boolean))].slice(0,18);
+}
+function renderCats(){
+  const cats=categories();
+  if(!cats.includes(selectedCat)) selectedCat="全部";
+  $("#categoryFilters").innerHTML=cats.map(c=>`<button class="chip ${c===selectedCat?'active':''}" data-cat="${c}">${c}</button>`).join("");
+  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{selectedCat=b.dataset.cat;renderCats();renderList();});
+}
+function filtered(){
+  const b=$("#budget").value,dist=+$("#distance").value;
+  return shops().filter(s=>{
+    const catok=selectedCat==="全部"||s.cat===selectedCat;
+    const bok=b==="all"||s.price===b;
+    return catok&&bok&&(s.mins||10)<=dist&&!state.blocked.includes(s.id);
+  });
+}
+function priceLabel(p){return p==="cheap"?"平價":p==="mid"?"中等":"犒賞局"}
+function renderList(){
+  let list=shops();
+  if(currentTab==="google") list=list.filter(s=>s.source==="google");
+  if(currentTab==="fav") list=list.filter(s=>state.fav.includes(s.id));
+  if(currentTab==="blocked") list=list.filter(s=>state.blocked.includes(s.id));
+  if(currentTab==="history"){const ids=[...new Set(state.history.map(h=>h.id))];list=ids.map(id=>shops().find(s=>s.id===id)).filter(Boolean);}
+  const q=searchTerm.trim().toLowerCase();
+  if(q) list=list.filter(s=>[s.name,s.address,s.cat,s.note].some(v=>String(v||"").toLowerCase().includes(q)));
+  $("#count").textContent=list.length;
+  $("#searchSummary").textContent=q?`搜尋「${searchTerm.trim()}」：找到 ${list.length} 間店家`:"";
+  $("#removedCount").textContent=state.removed.length;
+  $("#removedBar").classList.toggle("show",manageMode&&state.removed.length>0);
+  $("#shopList").innerHTML=list.length?list.map(s=>`
+    <div class="shop" id="shop-${escapeHtml(s.id)}">
+      <div>
+        <h3>${escapeHtml(s.name)} <span class="source ${s.source==="google"?"google":"manual"}">${s.source==="google"?"Google":"自建"}</span></h3>
+        <div class="meta"><span>🍽️ ${escapeHtml(s.cat||"其他")}</span><span>💰 ${priceLabel(s.price)}</span><span>🚶 約 ${s.mins||"?"} 分</span>${s.rating?`<span>⭐ ${s.rating} (${s.userRatingCount||"?"})</span>`:""}</div>
+        <div class="meta" style="margin-top:5px">${escapeHtml(s.address||s.note||"")}</div>
+        ${s.note&&s.address?`<div class="meta" style="margin-top:3px">💬 ${escapeHtml(s.note)}</div>`:""}
+      </div>
+      <div class="shop-actions">
+        ${manageMode?`<button class="deletebtn" onclick="removeShop('${s.id}')" title="從午餐圖鑑移除">🗑️</button>`:""}
+        <button class="iconbtn ${state.fav.includes(s.id)?'on':''}" onclick="toggleFav('${s.id}')">❤️</button>
+        <button class="iconbtn" onclick="window.open(${JSON.stringify(googleMapsUrl(s))},'_blank')">📍</button>
+        <button class="iconbtn ${state.blocked.includes(s.id)?'on':''}" onclick="toggleBlock('${s.id}')">🫥</button>
+      </div>
+    </div>`).join(""):`<div class="empty">${q?"找不到這間店 🤔<br><small>可以試試簡短店名，或在下方手動補進圖鑑。</small>":"這裡目前空空的 🍽️"}</div>`;
+}
+function removeShop(id){
+  const s=allShops().find(x=>x.id===id); if(!s)return;
+  if(!confirm(`確定要把「${s.name}」從午餐圖鑑移除嗎？\n\n之後重新同步 Google 也不會自動加回來，可用「全部復原」恢復。`))return;
+  if(!state.removed.includes(id))state.removed.push(id);
+  state.fav=state.fav.filter(x=>x!==id); state.blocked=state.blocked.filter(x=>x!==id);
+  save();renderCats();renderList();toast(`已移除：${s.name} 🗑️`);
+}
+function restoreRemoved(){
+  if(!state.removed.length)return;
+  state.removed=[];save();renderCats();renderList();toast("已復原所有移除的店家 ↩");
+}
+window.removeShop=removeShop;
+function escapeHtml(v){return String(v||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function toggleFav(id){state.fav=state.fav.includes(id)?state.fav.filter(x=>x!==id):[...state.fav,id];save();renderList();toast(state.fav.includes(id)?"已加入最愛 ❤️":"移除收藏");}
+function toggleBlock(id){state.blocked=state.blocked.includes(id)?state.blocked.filter(x=>x!==id):[...state.blocked,id];save();renderList();toast(state.blocked.includes(id)?"本店今日封印 🫥":"解除封印");}
+window.toggleFav=toggleFav;window.toggleBlock=toggleBlock;
+function showShop(s,spinning=false){
+  $("#roulette").innerHTML=`<div class="result ${spinning?'spin':''}"><div style="font-size:30px">${spinning?'🎰':'🍴'}</div><div class="restaurant-name">${escapeHtml(s.name)}</div>
+  <div class="badges"><span class="badge">${escapeHtml(s.cat)}</span><span class="badge">${priceLabel(s.price)}</span><span class="badge">🚶 約 ${s.mins} 分</span>${s.rating?`<span class="badge">⭐ ${s.rating}</span>`:""}</div>
+  ${spinning?'':`<div class="actions"><button class="mini" onclick="markEaten()">✅ 就吃這間</button><button class="mini" onclick="drawLunch()">🔄 我反悔了</button><button class="mini" onclick="window.open(${JSON.stringify(googleMapsUrl(s))},'_blank')">📍 Google Maps</button></div>`}</div>`;
+}
+function drawLunch(){
+  const pool=filtered(); if(!pool.length){toast("這組條件沒有店家，放寬一點吧！");return}
+  let i=0; const timer=setInterval(()=>{showShop(pool[Math.floor(Math.random()*pool.length)],true);i++;if(i>13){clearInterval(timer);currentResult=pool[Math.floor(Math.random()*pool.length)];showShop(currentResult,false);confetti(["🍜","🍚","🥟","🍛","🥢"]);}},85);
+}
+window.drawLunch=drawLunch;
+function markEaten(){
+  if(!currentResult)return;const wasToday=state.history.some(h=>h.date===today());state.history.push({id:currentResult.id,date:today()});state.xp+=(wasToday?5:20);save();updateStats();renderList();toast(`完成午餐任務！ +${wasToday?5:20} XP ✨`);confetti(["✨","⭐","🍱","🎉"]);
+}
+window.markEaten=markEaten;
+function updateStats(){
+  $("#xp").textContent=state.xp||0;$("#level").textContent=Math.floor((state.xp||0)/100)+1;
+  const uniqueDays=[...new Set(state.history.map(h=>h.date))].sort().reverse();let streak=0,d=new Date();
+  for(let k=0;k<60;k++){const ds=d.toISOString().slice(0,10);if(uniqueDays.includes(ds)){streak++;d.setDate(d.getDate()-1)}else if(k===0)d.setDate(d.getDate()-1);else break;}
+  $("#streak").textContent=streak;const wk=weekKey(today());const uniqueWeek=new Set(state.history.filter(h=>weekKey(h.date)===wk).map(h=>h.id)).size;$("#questText").textContent=`${Math.min(uniqueWeek,3)} / 3`;$("#questProgress").style.width=Math.min(100,uniqueWeek/3*100)+"%";
+}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2000)}
+function confetti(items){const c=$("#confetti");c.innerHTML="";for(let i=0;i<22;i++){const s=document.createElement("span");s.textContent=items[Math.floor(Math.random()*items.length)];s.style.left=Math.random()*100+"vw";s.style.animationDelay=Math.random()*.35+"s";c.appendChild(s)}setTimeout(()=>c.innerHTML="",1800);}
+
+let mapsLoadingPromise=null;
+function loadGoogleMaps(){
+  if(window.google?.maps?.importLibrary) return Promise.resolve();
+  if(mapsLoadingPromise) return mapsLoadingPromise;
+  mapsLoadingPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement("script");
+    script.src="https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(GOOGLE_MAPS_API_KEY)+"&v=weekly&libraries=places";
+    script.async=true; script.defer=true;
+    script.onload=resolve; script.onerror=()=>reject(new Error("Google Maps JavaScript API 載入失敗"));
+    document.head.appendChild(script);
+  });
+  return mapsLoadingPromise;
+}
+
+async function geocodeBase(){
+  const {Geocoder}=await google.maps.importLibrary("geocoding");
+  const geocoder=new Geocoder();
+  const res=await geocoder.geocode({address:BASE_ADDRESS,region:"TW"});
+  if(!res.results?.length) throw new Error("找不到青藝盟地址座標");
+  const loc=res.results[0].geometry.location;
+  return {lat:loc.lat(),lng:loc.lng()};
+}
+
+
+async function locateBaseWithPlaces(){
+  const {Place} = await google.maps.importLibrary("places");
+  const request = {
+    textQuery: "青少年表演藝術聯盟 新北市淡水區長興街56號",
+    fields: ["id","displayName","location","formattedAddress"],
+    language: "zh-TW",
+    region: "TW",
+    maxResultCount: 5
+  };
+  const {places} = await Place.searchByText(request);
+  if(!places || !places.length || !places[0].location){
+    throw new Error("Places 找不到青藝盟據點");
+  }
+  const p = places[0];
+  const lat = typeof p.location.lat === "function" ? p.location.lat() : p.location.lat;
+  const lng = typeof p.location.lng === "function" ? p.location.lng() : p.location.lng;
+  return {lat,lng};
+}
+
+async function searchOneType(center,type){
+  const {Place,SearchNearbyRankPreference}=await google.maps.importLibrary("places");
+  const request={
+    fields:["id","displayName","location","formattedAddress","googleMapsURI","rating","userRatingCount","priceLevel","primaryType","primaryTypeDisplayName","types","businessStatus"],
+    locationRestriction:{center,radius:SEARCH_RADIUS_METERS},
+    includedPrimaryTypes:[type],
+    maxResultCount:20,
+    rankPreference:SearchNearbyRankPreference.DISTANCE,
+    language:"zh-TW",
+    region:"TW"
+  };
+  const {places}=await Place.searchNearby(request);
+  return places||[];
+}
+
+async function searchLunchText(query){
+  const {Place}=await google.maps.importLibrary("places");
+  const request={
+    textQuery:query,
+    fields:["id","displayName","location","formattedAddress","googleMapsURI","rating","userRatingCount","priceLevel","primaryType","primaryTypeDisplayName","types","businessStatus"],
+    language:"zh-TW",
+    region:"TW",
+    maxResultCount:20
+  };
+  const {places}=await Place.searchByText(request);
+  return places||[];
+}
+
+async function syncGooglePlaces(){
+  const btn=$("#syncBtn"),status=$("#syncStatus");btn.disabled=true;status.textContent="正在載入 Google Maps…";
+  try{
+    await loadGoogleMaps();
+    status.textContent="正在定位青藝盟…";
+    const center=await locateBaseWithPlaces();
+    let all=[];
+
+    status.textContent="正在搜尋最近的正餐店家 1 / 10…";
+    try{all.push(...await searchOneType(center,"restaurant"));}catch(e){console.warn("restaurant",e)}
+
+    const lunchQueries=[
+      "淡水 英專路 美食 餐廳",
+      "淡水 英專路 便當",
+      "淡水 英專路 麵店",
+      "淡水 英專路 小吃",
+      "淡水 清水街 博愛街 美食",
+      "淡水 便當 自助餐",
+      "淡水 牛肉麵 水餃",
+      "淡水 滷肉飯 飯類",
+      "淡水 咖哩 日式 韓式料理"
+    ];
+    for(let i=0;i<lunchQueries.length;i++){
+      status.textContent=`正在補抓午餐店家 ${i+2} / ${lunchQueries.length+1}…`;
+      try{all.push(...await searchLunchText(lunchQueries[i]));}catch(e){console.warn(lunchQueries[i],e)}
+    }
+
+    const seen=new Map();
+    let excluded=0,outside=0;
+    for(const p of all){
+      if(!p.id||!p.location)continue;
+      const lat=typeof p.location.lat==="function"?p.location.lat():p.location.lat;
+      const lng=typeof p.location.lng==="function"?p.location.lng():p.location.lng;
+      const meters=haversine(center,{lat,lng});
+      if(meters>SEARCH_RADIUS_METERS){outside++;continue;}
+      const displayName=typeof p.displayName==="string"?p.displayName:(p.displayName?.text||"未命名店家");
+      if(!isLunchCandidate(p,displayName)){excluded++;continue;}
+      const primaryDisplay=typeof p.primaryTypeDisplayName==="string"?p.primaryTypeDisplayName:(p.primaryTypeDisplayName?.text||"");
+      seen.set(p.id,{
+        id:"g-"+p.id,googlePlaceId:p.id,name:displayName,
+        cat:categoryFromPlace({name:displayName,primaryType:p.primaryType,primaryTypeDisplayName:primaryDisplay,types:p.types}),
+        price:priceFromGoogle(p.priceLevel),mins:estimatedWalkMinutes(meters),distanceMeters:Math.round(meters),
+        address:p.formattedAddress||"",rating:p.rating||null,userRatingCount:p.userRatingCount||null,googleMapsURI:p.googleMapsURI||"",
+        note:primaryDisplay,source:"google",businessStatus:p.businessStatus||""
+      });
+    }
+    googleShops=[...seen.values()].sort((a,b)=>(a.mins-b.mins)||((b.rating||0)-(a.rating||0)));
+    localStorage.setItem("lunch_google_shops",JSON.stringify(googleShops));
+    localStorage.setItem("lunch_google_synced_at",new Date().toISOString());
+    status.textContent=`同步完成：${googleShops.length} 間午餐店家｜已排除 ${excluded} 間非午餐類型。`;
+    renderCats();renderList();toast(`午餐雷達完成！找到 ${googleShops.length} 間 🍱`);
+    confetti(["🍜","🍚","🥟","🍛","🍱"]);
+  }catch(err){
+    console.error(err);
+    status.textContent="同步失敗："+(err?.message||err);
+    toast("同步失敗，請檢查 API 權限／金鑰限制");
+  }finally{btn.disabled=false;}
+}
+
+
+async function runDiagnostics(){
+  const panel=$("#diagPanel");
+  panel.style.display="block";
+  const logs=[];
+  const log=(s)=>{logs.push(s);panel.textContent=logs.join("\n");};
+  log("1. 網頁來源："+location.href);
+  log("2. Protocol："+location.protocol);
+  if(location.protocol==="file:") log("❌ 目前仍是 file:// 開啟。請使用 start_lunch_site.bat，改由 http://localhost:8765 開啟。");
+  else log("✅ 已透過 HTTP/HTTPS 開啟。");
+  try{
+    log("3. 載入 Google Maps JavaScript API…");
+    await loadGoogleMaps();
+    log("✅ Maps JavaScript API 已載入");
+  }catch(e){ log("❌ Maps JS 載入失敗："+(e?.message||e)); return; }
+  try{
+    log("4. 測試 Places API (New) / Text Search…");
+    const center=await locateBaseWithPlaces();
+    log("✅ 找到青藝盟座標："+center.lat.toFixed(6)+", "+center.lng.toFixed(6));
+  }catch(e){ log("❌ Places Text Search 失敗："+(e?.message||e)); return; }
+  try{
+    log("5. 測試 Nearby Search…");
+    const center=await locateBaseWithPlaces();
+    const arr=await searchOneType(center,"restaurant");
+    log("✅ Nearby Search 成功，測試取得 "+arr.length+" 間餐廳");
+    log("🎉 API 串接正常，可以按「同步 Google 店家」。");
+  }catch(e){ log("❌ Nearby Search 失敗："+(e?.message||e)); }
+}
+
+$("#diagBtn").onclick=runDiagnostics;
+$("#syncBtn").onclick=syncGooglePlaces;$("#drawBtn").onclick=drawLunch;$("#budget").onchange=renderList;$("#distance").onchange=renderList;
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));renderList();});
+$("#shopSearch").oninput=e=>{searchTerm=e.target.value;renderList();};
+$("#clearSearch").onclick=()=>{$("#shopSearch").value="";searchTerm="";renderList();$("#shopSearch").focus();};
+$("#manageBtn").onclick=()=>{manageMode=!manageMode;$("#manageBtn").classList.toggle("active",manageMode);$("#manageBtn").textContent=manageMode?"✅ 完成編輯":"✏️ 編輯店家";renderList();};
+$("#restoreRemoved").onclick=restoreRemoved;
+$("#findOnMaps").onclick=()=>{const name=$("#newName").value.trim();window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(name?name+" 淡水": "淡水 午餐"),"_blank");};
+$("#addShop").onclick=()=>{
+  const name=$("#newName").value.trim(),cat=$("#newCat").value||"其他",price=$("#newPrice").value,mins=Math.max(1,Math.min(30,Number($("#newMins").value)||10)),address=$("#newAddress").value.trim(),note=$("#newNote").value.trim();
+  if(!name){toast("請先填店名 🍽️");$("#newName").focus();return}
+  const duplicate=allShops().find(s=>s.name.trim().toLowerCase()===name.toLowerCase());
+  if(duplicate&&!confirm(`圖鑑裡似乎已經有「${duplicate.name}」，仍要再新增一筆嗎？`))return;
+  const id="custom-"+Date.now();
+  custom.push({id,name,cat,price,mins,address:address||name,rating:null,note,source:"manual"});
+  state.removed=state.removed.filter(x=>x!==id);save();
+  $("#newName").value="";$("#newAddress").value="";$("#newNote").value="";$("#newMins").value="10";$("#newPrice").value="cheap";
+  renderCats();renderList();toast(`「${name}」已加入午餐圖鑑！ 🗺️`);confetti(["🍱","✨","📍"]);
+};
+
+const lastSync=localStorage.getItem("lunch_google_synced_at");
+if(lastSync){
+  const d=new Date(lastSync);
+  $("#syncStatus").textContent=`已有 ${googleShops.length} 間 Google 店家快取｜上次同步：${d.toLocaleString("zh-TW")}`;
+}
+renderCats();renderList();updateStats();
+</script>
+</body>
+</html>
