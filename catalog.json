@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "revision": "shared-catalog-initial",
-  "updatedAt": "2026-09-06T12:28:12.677459+00:00",
+  "revision": "a1620806-514d-48a8-84a9-f121f4df68ee",
+  "updatedAt": "2026-09-06T12:49:40.931833+00:00",
   "shops": [
     {
       "id": "meiermei",
@@ -45,6 +45,28 @@
       "address": "新北市淡水區清水街28號1樓",
       "rating": 4.5,
       "note": "想吃麵的時候",
+      "source": "manual"
+    },
+    {
+      "id": "vietnam-house-tamsui",
+      "name": "越南小棧（淡水店）",
+      "cat": "東南亞",
+      "price": "mid",
+      "mins": 10,
+      "address": "新北市淡水區水源街一段116號",
+      "rating": null,
+      "note": "使用者確認實際步行十分鐘內；預算分類暫列中等",
+      "source": "manual"
+    },
+    {
+      "id": "shaoye-shuiyuan",
+      "name": "邵爺鐵板燒（水源店）",
+      "cat": "鐵板燒",
+      "price": "mid",
+      "mins": 10,
+      "address": "新北市淡水區水源街一段115號",
+      "rating": null,
+      "note": "使用者確認實際步行十分鐘內；預算分類暫列中等",
       "source": "manual"
     }
   ],

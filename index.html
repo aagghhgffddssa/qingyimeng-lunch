@@ -117,7 +117,10 @@
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="syncbtn" id="syncBtn">🔄 同步 Google 店家</button><button class="syncbtn" id="diagBtn" style="background:#555">🧪 API 診斷</button></div>
   </div>
-  <div class="note">同步會優先找便當、麵食、小吃、飯類與英專路周邊正餐，並排除咖啡、糕餅、甜點、伴手禮與飲料店。同步結果先存為草稿，按「發布給所有人」後更新共用圖鑑。步行分鐘為估計值。</div><pre id="diagPanel" style="display:none;white-space:pre-wrap;background:#272822;color:#f8f8f2;padding:12px;border-radius:14px;overflow:auto;font-size:12px"></pre>
+  <div class="note">以九個分區搭配周邊街道及料理類別搜尋，涵蓋水源街、英專路、清水街等地。供應正餐的複合式店家也可收錄；純飲料與甜點店仍排除。同步結果先存為草稿，按「發布給所有人」後更新共用圖鑑。步行分鐘為估計值；已確認的步行時間優先採用。Google 搜尋仍可能漏店，可用下方店名查漏。</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><input id="lookupName" aria-label="查漏店名" placeholder="找不到？輸入店名查漏" style="padding:10px;flex:1;min-width:180px"><button class="managebtn" id="lookupBtn">🔎 查漏並補入草稿</button></div><p id="lookupStatus" role="status"></p>
+  <details id="searchReport"><summary>查看這次搜尋與排除原因</summary><div id="searchReportBody" style="max-height:320px;overflow:auto">尚未執行新版搜尋。</div></details>
+  <pre id="diagPanel" style="display:none;white-space:pre-wrap;background:#272822;color:#f8f8f2;padding:12px;border-radius:14px;overflow:auto;font-size:12px"></pre>
 </section>
 
 <div class="grid">
@@ -169,7 +172,7 @@
     <div class="form-help">不用每格都填得很精準：<b>店名必填</b>，分類、預算與步行時間會影響之後的篩選與抽選；地址填上後就能直接開 Google Maps。</div>
     <div class="form-grid">
       <div class="field"><label for="newName">🍽️ 店名 *</label><input id="newName" placeholder="例如：黑豆食堂"></div>
-      <div class="field"><label for="newCat">🏷️ 分類</label><select id="newCat"><option>便當／自助餐</option><option>麵食</option><option>水餃／鍋貼</option><option>飯類</option><option>台式小吃</option><option>中式／台式</option><option>日式</option><option>韓式</option><option>咖哩</option><option>東南亞</option><option>火鍋</option><option>速食／西式</option><option>早餐／輕食</option><option>餐廳</option><option>其他</option></select></div>
+      <div class="field"><label for="newCat">🏷️ 分類</label><select id="newCat"><option>便當／自助餐</option><option>麵食</option><option>水餃／鍋貼</option><option>飯類</option><option>台式小吃</option><option>中式／台式</option><option>日式</option><option>韓式</option><option>咖哩</option><option>東南亞</option><option>鐵板燒</option><option>火鍋</option><option>速食／西式</option><option>早餐／輕食</option><option>餐廳</option><option>其他</option></select></div>
       <div class="field"><label for="newPrice">💰 預算</label><select id="newPrice"><option value="cheap">平價</option><option value="mid">中等</option><option value="treat">犒賞局</option></select></div>
       <div class="field"><label for="newMins">🚶 步行時間</label><input id="newMins" type="number" min="1" max="30" value="10"><div class="field-note">填大約幾分鐘即可</div></div>
       <div class="field" style="grid-column:span 2"><label for="newAddress">📍 地址</label><input id="newAddress" placeholder="例如：新北市淡水區英專路21巷16號"></div>
@@ -181,12 +184,13 @@
 </div>
 <div class="toast" id="toast"></div><div class="confetti" id="confetti"></div>
 
+<script src="lunch-search.js"></script>
 <script>
 const GOOGLE_MAPS_API_KEY = 'AIzaSyAi4Lup9-WGFhtEm5rsSmUuHHexX0LAB-k';
 const BASE_ADDRESS = "新北市淡水區長興街56號1樓";
 const SEARCH_RADIUS_METERS = 850;
 
-const seedShops = [
+const seedShops = [{"id": "vietnam-house-tamsui", "name": "越南小棧（淡水店）", "cat": "東南亞", "price": "mid", "mins": 10, "address": "新北市淡水區水源街一段116號", "rating": null, "note": "使用者確認實際步行十分鐘內；預算分類暫列中等", "source": "manual"}, {"id": "shaoye-shuiyuan", "name": "邵爺鐵板燒（水源店）", "cat": "鐵板燒", "price": "mid", "mins": 10, "address": "新北市淡水區水源街一段115號", "rating": null, "note": "使用者確認實際步行十分鐘內；預算分類暫列中等", "source": "manual"},
  {id:"meiermei",name:"瑞麟美而美",cat:"早餐／輕食",price:"cheap",mins:1,address:"新北市淡水區長興街52號",rating:4.6,note:"就在隔壁等級",source:"manual"},
  {id:"rice-noodle",name:"淡水喜相逢米粉湯",cat:"台式小吃",price:"cheap",mins:5,address:"新北市淡水區長興街2號",rating:3.7,note:"米粉湯・台味",source:"manual"},
  {id:"pingping",name:"萍萍便當快餐",cat:"便當",price:"cheap",mins:7,address:"新北市淡水區博愛街29號",rating:4.3,note:"便當派安全選擇",source:"manual"},
@@ -203,10 +207,10 @@ const allShops=()=>dedupe([...googleShops,...custom]);
 const shops=()=>allShops().filter(s=>!state.removed.includes(s.id));
 
 function dedupe(arr){
-  const seen=new Map();
+  const seen=new Map(),ids=new Set();
   for(const s of arr){
     const key=(s.googlePlaceId||((s.name||"")+"|"+(s.address||""))).toLowerCase();
-    if(!seen.has(key)) seen.set(key,s);
+    if(!seen.has(key)&&!ids.has(s.id)){seen.set(key,s);ids.add(s.id);}
   }
   return [...seen.values()];
 }
@@ -224,6 +228,7 @@ function categoryFromPlace(p){
   const name=String(p.name||p.displayName||"").toLowerCase();
   const t=((p.primaryType||"")+" "+(p.primaryTypeDisplayName||"")+" "+(p.types||[]).join(" ")+" "+name).toLowerCase();
   const has=(words)=>words.some(w=>t.includes(w));
+  if(has(["teppanyaki","鐵板燒"])) return "鐵板燒";
   if(has(["便當","自助餐","快餐","燒臘","排骨飯","雞腿飯"])) return "便當／自助餐";
   if(has(["牛肉麵","麵店","麵館","乾麵","湯麵","麵疙瘩","拉麵","ramen","烏龍麵"])) return "麵食";
   if(has(["水餃","鍋貼","餃子","dumpling"])) return "水餃／鍋貼";
@@ -240,17 +245,6 @@ function categoryFromPlace(p){
   return "餐廳";
 }
 
-function isLunchCandidate(p,name){
-  const primary=String(p.primaryType||"").toLowerCase();
-  const types=(p.types||[]).map(x=>String(x).toLowerCase());
-  const n=String(name||"").toLowerCase();
-  const excludedTypes=["cafe","coffee_shop","bakery","dessert_shop","dessert_restaurant","ice_cream_shop","candy_store","confectionery","tea_store","bar","night_club"];
-  if(excludedTypes.includes(primary)) return false;
-  if(types.some(t=>excludedTypes.includes(t)) && !types.includes("restaurant")) return false;
-  const excludedNames=["咖啡","coffee","甜點","甜品","蛋糕","餅舖","餅店","餅家","花生糖","牛軋糖","鳳梨酥","伴手禮","烘焙","麵包","茶飲","手搖","飲料店","冰品","冰店","豆花"];
-  if(excludedNames.some(w=>n.includes(w))) return false;
-  return true;
-}
 function haversine(a,b){
   const R=6371000, toRad=x=>x*Math.PI/180, dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng);
   const q=Math.sin(dLat/2)**2+Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLng/2)**2;
@@ -264,7 +258,7 @@ function googleMapsUrl(s){
   return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s.name+" "+(s.address||""));
 }
 function categories(){
-  return ["全部",...new Set(shops().map(s=>s.cat).filter(Boolean))].slice(0,18);
+  return ["全部",...new Set(shops().map(s=>s.cat).filter(Boolean))];
 }
 function renderCats(){
   const cats=categories();
@@ -393,95 +387,6 @@ async function locateBaseWithPlaces(){
   return {lat,lng};
 }
 
-async function searchOneType(center,type){
-  const {Place,SearchNearbyRankPreference}=await google.maps.importLibrary("places");
-  const request={
-    fields:["id","displayName","location","formattedAddress","googleMapsURI","rating","userRatingCount","priceLevel","primaryType","primaryTypeDisplayName","types","businessStatus"],
-    locationRestriction:{center,radius:SEARCH_RADIUS_METERS},
-    includedPrimaryTypes:[type],
-    maxResultCount:20,
-    rankPreference:SearchNearbyRankPreference.DISTANCE,
-    language:"zh-TW",
-    region:"TW"
-  };
-  const {places}=await Place.searchNearby(request);
-  return places||[];
-}
-
-async function searchLunchText(query){
-  const {Place}=await google.maps.importLibrary("places");
-  const request={
-    textQuery:query,
-    fields:["id","displayName","location","formattedAddress","googleMapsURI","rating","userRatingCount","priceLevel","primaryType","primaryTypeDisplayName","types","businessStatus"],
-    language:"zh-TW",
-    region:"TW",
-    maxResultCount:20
-  };
-  const {places}=await Place.searchByText(request);
-  return places||[];
-}
-
-async function syncGooglePlaces(){
-  if(!beginCatalogEdit())return;
-  const btn=$("#syncBtn"),status=$("#syncStatus");btn.disabled=true;status.textContent="正在載入 Google Maps…";
-  try{
-    await loadGoogleMaps();
-    status.textContent="正在定位青藝盟…";
-    const center=await locateBaseWithPlaces();
-    let all=[];
-
-    status.textContent="正在搜尋最近的正餐店家 1 / 10…";
-    try{all.push(...await searchOneType(center,"restaurant"));}catch(e){console.warn("restaurant",e)}
-
-    const lunchQueries=[
-      "淡水 英專路 美食 餐廳",
-      "淡水 英專路 便當",
-      "淡水 英專路 麵店",
-      "淡水 英專路 小吃",
-      "淡水 清水街 博愛街 美食",
-      "淡水 便當 自助餐",
-      "淡水 牛肉麵 水餃",
-      "淡水 滷肉飯 飯類",
-      "淡水 咖哩 日式 韓式料理"
-    ];
-    for(let i=0;i<lunchQueries.length;i++){
-      status.textContent=`正在補抓午餐店家 ${i+2} / ${lunchQueries.length+1}…`;
-      try{all.push(...await searchLunchText(lunchQueries[i]));}catch(e){console.warn(lunchQueries[i],e)}
-    }
-
-    const seen=new Map();
-    let excluded=0,outside=0;
-    for(const p of all){
-      if(!p.id||!p.location)continue;
-      const lat=typeof p.location.lat==="function"?p.location.lat():p.location.lat;
-      const lng=typeof p.location.lng==="function"?p.location.lng():p.location.lng;
-      const meters=haversine(center,{lat,lng});
-      if(meters>SEARCH_RADIUS_METERS){outside++;continue;}
-      const displayName=typeof p.displayName==="string"?p.displayName:(p.displayName?.text||"未命名店家");
-      if(!isLunchCandidate(p,displayName)){excluded++;continue;}
-      const primaryDisplay=typeof p.primaryTypeDisplayName==="string"?p.primaryTypeDisplayName:(p.primaryTypeDisplayName?.text||"");
-      seen.set(p.id,{
-        id:"g-"+p.id,googlePlaceId:p.id,name:displayName,
-        cat:categoryFromPlace({name:displayName,primaryType:p.primaryType,primaryTypeDisplayName:primaryDisplay,types:p.types}),
-        price:priceFromGoogle(p.priceLevel),mins:estimatedWalkMinutes(meters),distanceMeters:Math.round(meters),
-        address:p.formattedAddress||"",rating:p.rating||null,userRatingCount:p.userRatingCount||null,googleMapsURI:p.googleMapsURI||"",
-        note:primaryDisplay,source:"google",businessStatus:p.businessStatus||""
-      });
-    }
-    googleShops=[...seen.values()].sort((a,b)=>(a.mins-b.mins)||((b.rating||0)-(a.rating||0)));
-    save();
-    localStorage.setItem("lunch_google_synced_at",new Date().toISOString());
-    status.textContent=`同步完成：${googleShops.length} 間午餐店家｜已排除 ${excluded} 間非午餐類型。`;
-    renderCats();renderList();toast(`午餐雷達完成！找到 ${googleShops.length} 間 🍱`);
-    confetti(["🍜","🍚","🥟","🍛","🍱"]);
-  }catch(err){
-    console.error(err);
-    status.textContent="同步失敗："+(err?.message||err);
-    toast("同步失敗，請檢查 API 權限／金鑰限制");
-  }finally{btn.disabled=false;}
-}
-
-
 async function runDiagnostics(){
   const panel=$("#diagPanel");
   panel.style.display="block";
@@ -511,6 +416,7 @@ async function runDiagnostics(){
 }
 
 $("#diagBtn").onclick=runDiagnostics;
+$("#lookupBtn").onclick=lookupMissingShop;
 $("#syncBtn").onclick=syncGooglePlaces;$("#drawBtn").onclick=drawLunch;$("#budget").onchange=renderList;$("#distance").onchange=renderList;
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));renderList();});
 $("#shopSearch").oninput=e=>{searchTerm=e.target.value;renderList();};
