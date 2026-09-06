@@ -61,7 +61,7 @@ function assessLunchPlace(p,center){
   const excluded=lunchExclusion(p,name);if(excluded)return {name,reason:excluded};
   const primaryDisplay=String(p.primaryTypeDisplayName?.text||p.primaryTypeDisplayName||'');
   const shop={id:known?.id||'g-'+p.id,googlePlaceId:p.id,name,cat:known?.cat||categoryFromPlace({...p,name,primaryTypeDisplayName:primaryDisplay}),price:priceFromGoogle(p.priceLevel),mins:known?.mins||estimatedWalkMinutes(meters),distanceMeters:Math.round(meters),address:p.formattedAddress||'',rating:p.rating||null,userRatingCount:p.userRatingCount||null,googleMapsURI:p.googleMapsURI||'',note:known?'使用者確認實際步行十分鐘內':primaryDisplay,source:'google',businessStatus:p.businessStatus||''};
-  return {name,shop,reason:state.removed.includes(shop.id)?'曾手動移除，保持移除狀態':known?'收錄：已確認步行十分鐘內':'收錄：估計步行 '+shop.mins+' 分鐘'};
+  return {name,shop,reason:state.removed.includes(shop.id)?'曾手動移除，保持移除狀態':known?'收錄：已確認步行十分鐘內':'候選店家：步行時間待核對'};
 }
 function mergeLunchPlaces(previous,places,center){
   const incoming=new Map(),report=[],rejected=new Set(),seen=new Set();
@@ -97,7 +97,11 @@ async function syncGooglePlaces(){
     }
     if(!successes)throw new Error('所有搜尋均失敗，原图鑑已保留');
     const result=mergeLunchPlaces(googleShops,all,center);
-    if(result.found||result.shops.length!==googleShops.length){if(!beginCatalogEdit())return;googleShops=result.shops;save();}
+    const walking=await checkWalkingRoutes(result.shops,(i,n,name)=>{status.textContent=`核對步行 ${i} / ${n}：${name}`;});
+    result.shops=walking.shops;failures.push(...walking.notes);
+    for(const row of result.report)if(row.shop){const checked=result.shops.find(s=>s.id===row.shop.id);if(checked)row.reason=walkingLabel(checked);}
+
+    if(result.shops.length||result.shops.length!==googleShops.length){if(!beginCatalogEdit())return;googleShops=result.shops;save();}
     showLunchReport(result.report,failures);
     localStorage.setItem('lunch_google_synced_at',new Date().toISOString());
     status.textContent=`本次找到 ${result.found} 間，新增 ${result.added} 間；Google 圖鑑共 ${googleShops.length} 間。${failures.length?'有 '+failures.length+' 組搜尋失敗，請查看原因或稍後重試。':''}修改後請發布給所有人。`;
@@ -116,9 +120,14 @@ async function lookupMissingShop(){
     const normalize=s=>String(s).replace(/[\s（）()・·-]/g,'').toLowerCase();
     const exact=places.filter(p=>normalize(p.displayName?.text||p.displayName).includes(normalize(query)));
     const result=mergeLunchPlaces(googleShops,exact,center);
+    const targets=new Set(result.report.filter(r=>r.shop).map(r=>r.shop.id));
+    const walking=await checkWalkingRoutes(result.shops.filter(s=>targets.has(s.id)));
+    result.shops=result.shops.map(s=>walking.shops.find(x=>x.id===s.id)||s);
+    for(const row of result.report)if(row.shop){const checked=result.shops.find(s=>s.id===row.shop.id);if(checked)row.reason=walkingLabel(checked);}
+
     if(result.found){if(!beginCatalogEdit())return;googleShops=result.shops;save();renderCats();renderList();}
-    showLunchReport(result.report);$('#searchReport').open=true;
-    status.textContent=result.found?'找到 '+result.found+' 間符合範圍的店家，已更新草稿。若曾手動移除，仍維持移除；請確認後發布。':exact.length?'找到店家但未自動收錄，原因如下；若你確認實際步行可達，可用下方表單手動加入。':'Google 未回傳名稱相符的店家，請試試簡短店名，或使用下方表單手動加入。';
+    showLunchReport(result.report,walking.notes);$('#searchReport').open=true;
+    status.textContent=result.found?'找到 '+result.found+' 間候選店家並更新草稿；只有步行核對通過的店家會進入十分鐘清單。請確認結果後發布。':exact.length?'找到店家但未自動收錄，原因如下；若你確認實際步行可達，可用下方表單手動加入。':'Google 未回傳名稱相符的店家，請試試簡短店名，或使用下方表單手動加入。';
   }catch(e){status.textContent='查漏失敗：'+String(e.message||e)+'；原圖鑑已保留。';}
   finally{lunchSearchBusy=false;$('#syncBtn').disabled=false;$('#lookupBtn').disabled=false;}
 }

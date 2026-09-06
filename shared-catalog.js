@@ -21,6 +21,11 @@ function validateCatalog(value) {
     shop.rating=Number.isFinite(Number(s.rating)) && s.rating!==null?Math.max(0,Math.min(5,Number(s.rating))):null;
     shop.userRatingCount=Math.max(0,Math.floor(Number(s.userRatingCount)||0));
     shop.distanceMeters=Math.max(0,Number(s.distanceMeters)||0);
+    shop.walkSource=['google_walk','manual_walk'].includes(s.walkSource)?s.walkSource:'unknown';
+    shop.walkDurationSeconds=typeof s.walkDurationSeconds==='number'&&Number.isFinite(s.walkDurationSeconds)&&s.walkDurationSeconds>0?s.walkDurationSeconds:null;
+    shop.walkOrigin=String(s.walkOrigin||'');shop.walkCheckedAt=String(s.walkCheckedAt||'');
+    shop.walkDistanceMeters=typeof s.walkDistanceMeters==='number'&&Number.isFinite(s.walkDistanceMeters)&&s.walkDistanceMeters>=0?s.walkDistanceMeters:null;
+    shop.walkWarnings=Array.isArray(s.walkWarnings)?s.walkWarnings.slice(0,10).map(x=>String(x).slice(0,2000)):[];
     shop.googleMapsURI='';
     try {const u=new URL(s.googleMapsURI);if(u.protocol==='https:' && (u.hostname==='maps.google.com'||u.hostname==='www.google.com'||u.hostname==='maps.app.goo.gl')) shop.googleMapsURI=u.href;}catch{}
     return shop;
@@ -34,7 +39,7 @@ function displayCatalog(catalog) {
   googleShops=catalog.shops.filter(s=>s.source==='google');
   custom=catalog.shops.filter(s=>s.source!=='google');
   state.removed=[...catalog.removed];
-  if(currentResult && !shops().some(s=>s.id===currentResult.id)) {
+  if(currentResult && !shops().some(s=>s.id===currentResult.id&&withinWalkingLimit(s))) {
     currentResult=null;
     $('#roulette').textContent='圖鑑已更新，請重新抽選午餐。';
   }
