@@ -10,11 +10,12 @@ function walkingEvidence(shop){
     const seconds=shop.walkDurationSeconds;
     if(typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>0)return {seconds,kind:shop.walkSource};
   }
-  const distance=Number(shop.distanceMeters),saved=Number(shop.mins);
+  const distance=Number(shop.distanceMeters),roadDistance=Number(shop.walkDistanceMeters),saved=Number(shop.mins);
   const fromDistance=Number.isFinite(distance)&&distance>0?Math.ceil(distance*1.2/80):0;
+  const fromRoadDistance=Number.isFinite(roadDistance)&&roadDistance>0?Math.ceil(roadDistance*1.2/80):0;
   const fromSaved=Number.isFinite(saved)&&saved>0?Math.ceil(saved):0;
   // Preserve a longer previously recorded time rather than shorten it on failure.
-  const minutes=Math.max(fromDistance,fromSaved);
+  const minutes=Math.max(fromDistance,fromRoadDistance,fromSaved);
   return {seconds:minutes>0?minutes*60:null,kind:minutes>0?'estimate':'unknown'};
 }
 function walkingSeconds(shop){return walkingEvidence(shop).seconds;}

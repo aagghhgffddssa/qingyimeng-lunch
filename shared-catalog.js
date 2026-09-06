@@ -16,7 +16,9 @@ function validateCatalog(value) {
     const shop={id:s.id};
     for(const k of ['name','cat','address','note','googlePlaceId','businessStatus']) shop[k]=String(s[k]||'').slice(0,2000);
     shop.price=['cheap','mid','treat'].includes(s.price)?s.price:'cheap';
-    shop.mins=Number.isFinite(Number(s.mins))&&Number(s.mins)>0?Math.min(60,Math.ceil(Number(s.mins))):null;
+    const savedMinutes=Number(s.mins), savedDistance=Number(s.distanceMeters), savedWalkDistance=Number(s.walkDistanceMeters);
+    const derivedMinutes=[savedMinutes, savedDistance>0?Math.ceil(savedDistance*1.2/80):0, savedWalkDistance>0?Math.ceil(savedWalkDistance*1.2/80):0].filter(x=>Number.isFinite(x)&&x>0);
+    shop.mins=derivedMinutes.length?Math.min(60,Math.max(...derivedMinutes)):null;
     shop.source=s.source==='google'?'google':'manual';
     shop.rating=Number.isFinite(Number(s.rating)) && s.rating!==null?Math.max(0,Math.min(5,Number(s.rating))):null;
     shop.userRatingCount=Math.max(0,Math.floor(Number(s.userRatingCount)||0));

@@ -283,7 +283,8 @@ function renderList(){
   if(currentTab==="blocked") list=list.filter(s=>state.blocked.includes(s.id));
   if(currentTab==="history"){const ids=[...new Set(state.history.map(h=>h.id))];list=ids.map(id=>shops().find(s=>s.id===id)).filter(Boolean);}
   if(currentTab==="review")list=list.filter(s=>!withinWalkingLimit(s,10));
-  else list=list.filter(s=>withinWalkingLimit(s,+$("#distance").value));
+  // The main atlas shows nearby candidates, including clearly labelled estimates.
+  // Only the roulette filter requires a confirmed/estimated ten-minute cutoff.
   const q=searchTerm.trim().toLowerCase();
   if(q) list=list.filter(s=>[s.name,s.address,s.cat,s.note].some(v=>String(v||"").toLowerCase().includes(q)));
   $("#count").textContent=list.length;
