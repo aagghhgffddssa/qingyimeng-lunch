@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "revision": "shared-catalog-initial",
+  "updatedAt": "2026-09-06T12:28:12.677459+00:00",
+  "shops": [
+    {
+      "id": "meiermei",
+      "name": "瑞麟美而美",
+      "cat": "早餐／輕食",
+      "price": "cheap",
+      "mins": 1,
+      "address": "新北市淡水區長興街52號",
+      "rating": 4.6,
+      "note": "就在隔壁等級",
+      "source": "manual"
+    },
+    {
+      "id": "rice-noodle",
+      "name": "淡水喜相逢米粉湯",
+      "cat": "台式小吃",
+      "price": "cheap",
+      "mins": 5,
+      "address": "新北市淡水區長興街2號",
+      "rating": 3.7,
+      "note": "米粉湯・台味",
+      "source": "manual"
+    },
+    {
+      "id": "pingping",
+      "name": "萍萍便當快餐",
+      "cat": "便當",
+      "price": "cheap",
+      "mins": 7,
+      "address": "新北市淡水區博愛街29號",
+      "rating": 4.3,
+      "note": "便當派安全選擇",
+      "source": "manual"
+    },
+    {
+      "id": "yimian",
+      "name": "一麵",
+      "cat": "麵食",
+      "price": "cheap",
+      "mins": 7,
+      "address": "新北市淡水區清水街28號1樓",
+      "rating": 4.5,
+      "note": "想吃麵的時候",
+      "source": "manual"
+    }
+  ],
+  "removed": []
+}

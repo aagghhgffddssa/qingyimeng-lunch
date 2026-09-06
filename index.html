@@ -82,6 +82,29 @@
   </div>
 </header>
 
+<section class="card" id="sharedPanel" style="margin:16px auto;max-width:1200px;padding:20px">
+  <div class="section-title"><h2>🌍 共用圖鑑</h2></div>
+  <p id="sharedStatus" role="status" aria-live="polite">正在讀取共用圖鑑…</p>
+  <p>新增、移除或同步 Google 後，按「發布給所有人」。收藏、封印、吃過紀錄與 XP 為個人紀錄。</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
+    <button class="syncbtn" id="publishCatalog" disabled>☁️ 發布給所有人</button>
+    <button class="managebtn" id="refreshCatalog">🔄 取得最新圖鑑</button>
+    <button class="managebtn" id="importLegacy">📥 匯入這台電腦舊圖鑑</button>
+    <button class="managebtn" id="discardDraft" hidden>捨棄草稿</button>
+  </div>
+  <details><summary>第一次發布：設定 GitHub 編輯授權</summary>
+    <p>只有擁有專案寫入權限的人可以發布；同事查看與抽選不需授權。</p>
+    <ol><li>開啟 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">GitHub Fine-grained token 設定</a>，取名 Lunch atlas，設定到期日。</li>
+    <li>Repository access 選 Only select repositories，再選 qingyimeng-lunch。</li>
+    <li>Repository permissions 的 Contents 設為 Read and write，按 Generate token。</li>
+    <li>按「發布給所有人」時貼入 Token。授權只用於這次發布，不會存進網站或瀏覽器。</li></ol>
+  </details>
+</section>
+<dialog id="publishDialog" style="max-width:480px;width:calc(100% - 40px);border:0;border-radius:18px;padding:24px">
+  <form id="publishForm"><h2>發布共用圖鑑</h2><p>店家資料將公開給使用此網站的所有人；個人紀錄不會上傳。</p>
+  <label for="githubToken">GitHub 編輯授權 Token</label><input id="githubToken" type="password" autocomplete="off" required style="width:100%;margin:12px 0;padding:12px;box-sizing:border-box">
+  <p id="publishError" role="alert"></p><button class="syncbtn" id="confirmPublish" type="submit">確認發布</button> <button class="managebtn" id="cancelPublish" type="button">取消</button></form>
+</dialog>
 <section class="card" style="margin-bottom:18px">
   <div class="section-title"><h2>🌐 Google 午餐雷達</h2><small>API Key 已設定</small></div>
   <div class="syncbox">
@@ -94,14 +117,14 @@
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="syncbtn" id="syncBtn">🔄 同步 Google 店家</button><button class="syncbtn" id="diagBtn" style="background:#555">🧪 API 診斷</button></div>
   </div>
-  <div class="note">同步會優先找便當、麵食、小吃、飯類與英專路周邊正餐，並排除咖啡、糕餅、甜點、伴手禮與飲料店。結果會存在這台瀏覽器的快取中；建議約每週同步一次。步行分鐘為估計值。</div><pre id="diagPanel" style="display:none;white-space:pre-wrap;background:#272822;color:#f8f8f2;padding:12px;border-radius:14px;overflow:auto;font-size:12px"></pre>
+  <div class="note">同步會優先找便當、麵食、小吃、飯類與英專路周邊正餐，並排除咖啡、糕餅、甜點、伴手禮與飲料店。同步結果先存為草稿，按「發布給所有人」後更新共用圖鑑。步行分鐘為估計值。</div><pre id="diagPanel" style="display:none;white-space:pre-wrap;background:#272822;color:#f8f8f2;padding:12px;border-radius:14px;overflow:auto;font-size:12px"></pre>
 </section>
 
 <div class="grid">
   <section class="card hero">
     <div>
       <div class="eyebrow">TODAY'S QUEST</div><div class="question">今天，中午吃什麼？</div>
-      <div class="sub">Google 店家＋你自己的店家一起抽。懶得選，就交給命運。</div>
+      <div class="sub">大家共用一份店家圖鑑。懶得選，就交給命運。</div>
       <div class="filters" id="categoryFilters"></div>
       <div class="controls">
         <select id="budget">
@@ -176,7 +199,7 @@ let state = JSON.parse(localStorage.getItem("lunch_state")||'{"xp":0,"fav":[],"b
 state.removed=Array.isArray(state.removed)?state.removed:[];
 let selectedCat="全部", currentTab="all", currentResult=null, searchTerm="", manageMode=false;
 const $=s=>document.querySelector(s);
-const allShops=()=>dedupe([...googleShops,...seedShops,...custom]);
+const allShops=()=>dedupe([...googleShops,...custom]);
 const shops=()=>allShops().filter(s=>!state.removed.includes(s.id));
 
 function dedupe(arr){
@@ -187,7 +210,7 @@ function dedupe(arr){
   }
   return [...seen.values()];
 }
-function save(){localStorage.setItem("lunch_state",JSON.stringify(state));localStorage.setItem("lunch_custom",JSON.stringify(custom));localStorage.setItem("lunch_google_shops",JSON.stringify(googleShops));}
+function save(){localStorage.setItem("lunch_state",JSON.stringify(state));if(typeof persistCatalogDraft === "function") persistCatalogDraft();}
 function today(){return new Date().toISOString().slice(0,10)}
 function weekKey(dstr){const d=new Date(dstr+"T12:00:00"),onejan=new Date(d.getFullYear(),0,1);return d.getFullYear()+"-"+Math.ceil((((d-onejan)/86400000)+onejan.getDay()+1)/7);}
 function priceFromGoogle(p){
@@ -246,7 +269,7 @@ function categories(){
 function renderCats(){
   const cats=categories();
   if(!cats.includes(selectedCat)) selectedCat="全部";
-  $("#categoryFilters").innerHTML=cats.map(c=>`<button class="chip ${c===selectedCat?'active':''}" data-cat="${c}">${c}</button>`).join("");
+  $("#categoryFilters").innerHTML=cats.map(c=>`<button class="chip ${c===selectedCat?'active':''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`).join("");
   document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{selectedCat=b.dataset.cat;renderCats();renderList();});
 }
 function filtered(){
@@ -279,22 +302,24 @@ function renderList(){
         ${s.note&&s.address?`<div class="meta" style="margin-top:3px">💬 ${escapeHtml(s.note)}</div>`:""}
       </div>
       <div class="shop-actions">
-        ${manageMode?`<button class="deletebtn" onclick="removeShop('${s.id}')" title="從午餐圖鑑移除">🗑️</button>`:""}
-        <button class="iconbtn ${state.fav.includes(s.id)?'on':''}" onclick="toggleFav('${s.id}')">❤️</button>
-        <button class="iconbtn" onclick="window.open(${JSON.stringify(googleMapsUrl(s))},'_blank')">📍</button>
-        <button class="iconbtn ${state.blocked.includes(s.id)?'on':''}" onclick="toggleBlock('${s.id}')">🫥</button>
+        ${manageMode?`<button class="deletebtn" data-action="remove" data-id="${escapeHtml(s.id)}" title="從午餐圖鑑移除">🗑️</button>`:""}
+        <button class="iconbtn ${state.fav.includes(s.id)?'on':''}" data-action="fav" data-id="${escapeHtml(s.id)}">❤️</button>
+        <button class="iconbtn" data-map="${escapeHtml(googleMapsUrl(s))}">📍</button>
+        <button class="iconbtn ${state.blocked.includes(s.id)?'on':''}" data-action="block" data-id="${escapeHtml(s.id)}">🫥</button>
       </div>
     </div>`).join(""):`<div class="empty">${q?"找不到這間店 🤔<br><small>可以試試簡短店名，或在下方手動補進圖鑑。</small>":"這裡目前空空的 🍽️"}</div>`;
 }
 function removeShop(id){
   const s=allShops().find(x=>x.id===id); if(!s)return;
   if(!confirm(`確定要把「${s.name}」從午餐圖鑑移除嗎？\n\n之後重新同步 Google 也不會自動加回來，可用「全部復原」恢復。`))return;
+  if(!beginCatalogEdit())return;
   if(!state.removed.includes(id))state.removed.push(id);
   state.fav=state.fav.filter(x=>x!==id); state.blocked=state.blocked.filter(x=>x!==id);
   save();renderCats();renderList();toast(`已移除：${s.name} 🗑️`);
 }
 function restoreRemoved(){
   if(!state.removed.length)return;
+  if(!beginCatalogEdit())return;
   state.removed=[];save();renderCats();renderList();toast("已復原所有移除的店家 ↩");
 }
 window.removeShop=removeShop;
@@ -305,7 +330,7 @@ window.toggleFav=toggleFav;window.toggleBlock=toggleBlock;
 function showShop(s,spinning=false){
   $("#roulette").innerHTML=`<div class="result ${spinning?'spin':''}"><div style="font-size:30px">${spinning?'🎰':'🍴'}</div><div class="restaurant-name">${escapeHtml(s.name)}</div>
   <div class="badges"><span class="badge">${escapeHtml(s.cat)}</span><span class="badge">${priceLabel(s.price)}</span><span class="badge">🚶 約 ${s.mins} 分</span>${s.rating?`<span class="badge">⭐ ${s.rating}</span>`:""}</div>
-  ${spinning?'':`<div class="actions"><button class="mini" onclick="markEaten()">✅ 就吃這間</button><button class="mini" onclick="drawLunch()">🔄 我反悔了</button><button class="mini" onclick="window.open(${JSON.stringify(googleMapsUrl(s))},'_blank')">📍 Google Maps</button></div>`}</div>`;
+  ${spinning?'':`<div class="actions"><button class="mini" onclick="markEaten()">✅ 就吃這間</button><button class="mini" onclick="drawLunch()">🔄 我反悔了</button><button class="mini" data-map="${escapeHtml(googleMapsUrl(s))}">📍 Google Maps</button></div>`}</div>`;
 }
 function drawLunch(){
   const pool=filtered(); if(!pool.length){toast("這組條件沒有店家，放寬一點吧！");return}
@@ -397,6 +422,7 @@ async function searchLunchText(query){
 }
 
 async function syncGooglePlaces(){
+  if(!beginCatalogEdit())return;
   const btn=$("#syncBtn"),status=$("#syncStatus");btn.disabled=true;status.textContent="正在載入 Google Maps…";
   try{
     await loadGoogleMaps();
@@ -443,7 +469,7 @@ async function syncGooglePlaces(){
       });
     }
     googleShops=[...seen.values()].sort((a,b)=>(a.mins-b.mins)||((b.rating||0)-(a.rating||0)));
-    localStorage.setItem("lunch_google_shops",JSON.stringify(googleShops));
+    save();
     localStorage.setItem("lunch_google_synced_at",new Date().toISOString());
     status.textContent=`同步完成：${googleShops.length} 間午餐店家｜已排除 ${excluded} 間非午餐類型。`;
     renderCats();renderList();toast(`午餐雷達完成！找到 ${googleShops.length} 間 🍱`);
@@ -497,7 +523,8 @@ $("#addShop").onclick=()=>{
   if(!name){toast("請先填店名 🍽️");$("#newName").focus();return}
   const duplicate=allShops().find(s=>s.name.trim().toLowerCase()===name.toLowerCase());
   if(duplicate&&!confirm(`圖鑑裡似乎已經有「${duplicate.name}」，仍要再新增一筆嗎？`))return;
-  const id="custom-"+Date.now();
+  if(!beginCatalogEdit())return;
+  const id="custom-"+crypto.randomUUID();
   custom.push({id,name,cat,price,mins,address:address||name,rating:null,note,source:"manual"});
   state.removed=state.removed.filter(x=>x!==id);save();
   $("#newName").value="";$("#newAddress").value="";$("#newNote").value="";$("#newMins").value="10";$("#newPrice").value="cheap";
@@ -511,5 +538,6 @@ if(lastSync){
 }
 renderCats();renderList();updateStats();
 </script>
+<script src="shared-catalog.js"></script>
 </body>
 </html>
