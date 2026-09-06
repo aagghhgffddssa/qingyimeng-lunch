@@ -76,6 +76,11 @@ function mergeLunchPlaces(previous,places,center){
   const merged=new Map(previous.filter(s=>!rejected.has(s.googlePlaceId)).map(s=>[s.id,s]));
   for(const shop of incoming.values()){
     for(const [id,old] of merged)if(old.googlePlaceId===shop.googlePlaceId&&id!==shop.id)merged.delete(id);
+    const previousShop=previous.find(old=>old.id===shop.id || (shop.googlePlaceId && old.googlePlaceId===shop.googlePlaceId));
+    if(previousShop && ['google_walk','manual_walk'].includes(previousShop.walkSource) && previousShop.walkOrigin===BASE_ADDRESS){
+      for(const key of ['walkSource','walkDurationSeconds','walkOrigin','walkCheckedAt','walkDistanceMeters','walkWarnings'])shop[key]=previousShop[key];
+      if(Number.isFinite(previousShop.walkDurationSeconds))shop.mins=Math.ceil(previousShop.walkDurationSeconds/60);
+    }
     merged.set(shop.id,shop);
   }
   return {shops:[...merged.values()].sort((a,b)=>a.mins-b.mins||(b.rating||0)-(a.rating||0)),report,found:incoming.size,added:[...incoming.keys()].filter(id=>!previous.some(s=>s.id===id)).length};
@@ -127,7 +132,7 @@ async function lookupMissingShop(){
 
     if(result.found){if(!beginCatalogEdit())return;googleShops=result.shops;save();renderCats();renderList();}
     showLunchReport(result.report,walking.notes);$('#searchReport').open=true;
-    status.textContent=result.found?'找到 '+result.found+' 間候選店家並更新草稿；只有步行核對通過的店家會進入十分鐘清單。請確認結果後發布。':exact.length?'找到店家但未自動收錄，原因如下；若你確認實際步行可達，可用下方表單手動加入。':'Google 未回傳名稱相符的店家，請試試簡短店名，或使用下方表單手動加入。';
+    status.textContent=result.found?'找到 '+result.found+' 間候選店家並更新草稿；優先使用已核對步行時間，未核對店家以估計時間篩選並標示。請確認結果後發布。':exact.length?'找到店家但未自動收錄，原因如下；若你確認實際步行可達，可用下方表單手動加入。':'Google 未回傳名稱相符的店家，請試試簡短店名，或使用下方表單手動加入。';
   }catch(e){status.textContent='查漏失敗：'+String(e.message||e)+'；原圖鑑已保留。';}
   finally{lunchSearchBusy=false;$('#syncBtn').disabled=false;$('#lookupBtn').disabled=false;}
 }

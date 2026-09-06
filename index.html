@@ -117,7 +117,7 @@
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="syncbtn" id="syncBtn">🔄 同步 Google 店家</button><button class="syncbtn" id="walkingBtn">🚶 核對步行時間</button><button class="syncbtn" id="diagBtn" style="background:#555">🧪 API 診斷</button></div>
   </div>
-  <div class="note">以九個分區搭配周邊街道及料理類別搜尋，涵蓋水源街、英專路、清水街等地。供應正餐的複合式店家也可收錄；純飲料與甜點店仍排除。同步結果先存為草稿，按「發布給所有人」後更新共用圖鑑。搜尋距離僅用於找候選店家；十分鐘清單與抽選只採 Google 步行路線估時或人工確認時間。尚未確認及超過十分鐘的店家另列。Google 搜尋仍可能漏店，可用下方店名查漏。</div>
+  <div class="note">以九個分區搭配周邊街道及料理類別搜尋，涵蓋水源街、英專路、清水街等地。供應正餐的複合式店家也可收錄；純飲料與甜點店仍排除。同步結果先存為草稿，按「發布給所有人」後更新共用圖鑑。搜尋距離僅用於找候選店家；優先採用 Google 步行路線或人工確認時間；路線服務無法使用時保留估計時間並標示，不會整批排除店家。超過十分鐘或缺少時間資料的店家另列。Google 搜尋仍可能漏店，可用下方店名查漏。</div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><input id="lookupName" aria-label="查漏店名" placeholder="找不到？輸入店名查漏" style="padding:10px;flex:1;min-width:180px"><button class="managebtn" id="lookupBtn">🔎 查漏並補入草稿</button></div><p id="lookupStatus" role="status"></p>
   <details id="searchReport"><summary>查看這次搜尋與排除原因</summary><div id="searchReportBody" style="max-height:320px;overflow:auto">尚未執行新版搜尋。</div></details>
   <pre id="diagPanel" style="display:none;white-space:pre-wrap;background:#272822;color:#f8f8f2;padding:12px;border-radius:14px;overflow:auto;font-size:12px"></pre>
@@ -134,7 +134,7 @@
           <option value="all">💰 預算不限</option><option value="cheap">💰 平價</option><option value="mid">💰 中等</option><option value="treat">💰 今天對自己好一點</option>
         </select>
         <select id="distance">
-          <option value="10">🚶 已確認 10 分鐘內</option><option value="6">🚶 懶得走：約 6 分鐘內</option><option value="3">🚶 超懶：約 3 分鐘內</option>
+          <option value="10">🚶 約 10 分鐘內</option><option value="6">🚶 懶得走：約 6 分鐘內</option><option value="3">🚶 超懶：約 3 分鐘內</option>
         </select>
       </div>
     </div>
@@ -153,7 +153,7 @@
     <div class="search-summary" id="searchSummary"></div>
     <div class="removedbar" id="removedBar"><span>🗑️ 已從午餐圖鑑移除 <b id="removedCount">0</b> 間</span><button class="restorebtn" id="restoreRemoved">↩ 全部復原</button></div>
     <div class="tabs">
-      <button class="tab active" data-tab="all">十分鐘內</button><button class="tab" data-tab="review">待確認／超時</button><button class="tab" data-tab="google">🌐 Google</button>
+      <button class="tab active" data-tab="all">約十分鐘內</button><button class="tab" data-tab="review">超時／缺少資料</button><button class="tab" data-tab="google">🌐 Google</button>
       <button class="tab" data-tab="fav">❤️ 收藏</button><button class="tab" data-tab="history">✅ 吃過</button><button class="tab" data-tab="blocked">🫥 封印</button>
     </div>
     <div class="list" id="shopList"></div>
@@ -174,7 +174,7 @@
       <div class="field"><label for="newName">🍽️ 店名 *</label><input id="newName" placeholder="例如：黑豆食堂"></div>
       <div class="field"><label for="newCat">🏷️ 分類</label><select id="newCat"><option>便當／自助餐</option><option>麵食</option><option>水餃／鍋貼</option><option>飯類</option><option>台式小吃</option><option>中式／台式</option><option>日式</option><option>韓式</option><option>咖哩</option><option>東南亞</option><option>鐵板燒</option><option>火鍋</option><option>速食／西式</option><option>早餐／輕食</option><option>餐廳</option><option>其他</option></select></div>
       <div class="field"><label for="newPrice">💰 預算</label><select id="newPrice"><option value="cheap">平價</option><option value="mid">中等</option><option value="treat">犒賞局</option></select></div>
-      <div class="field"><label for="newMins">🚶 步行時間</label><input id="newMins" type="number" min="1" max="30" value="10"><div class="field-note">填實際步行約幾分鐘；未確認時不參加抽選</div></div>
+      <div class="field"><label for="newMins">🚶 步行時間</label><input id="newMins" type="number" min="1" max="30" value="10"><div class="field-note">填大約步行幾分鐘；未核對路線時會標示為估計</div></div>
       <div class="field" style="grid-column:span 2"><label for="newAddress">📍 地址</label><input id="newAddress" placeholder="例如：新北市淡水區英專路21巷16號"></div>
       <div class="field full"><label><input type="checkbox" id="newWalkConfirmed"> 我已確認從青藝盟實際步行時間</label></div><div class="field full"><label for="newNote">💬 備註（選填）</label><input id="newNote" placeholder="例如：份量大、週一公休、大家常點雞腿飯"></div>
     </div>
